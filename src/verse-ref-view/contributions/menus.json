@@ -2,7 +2,15 @@
   "mainMenu": {
     "columns": {},
     "groups": {},
-    "items": []
+    "items": [
+      {
+        "label": "%mainMenu_openVerseRefView%",
+        "localizeNotes": "Application main menu > Project > Open Verse Ref View",
+        "group": "platform.projectResources",
+        "order": -85,
+        "command": "verseRefView.open"
+      }
+    ]
   },
   "defaultWebViewTopMenu": {
     "columns": {},
@@ -13,5 +21,18 @@
     "groups": {},
     "items": []
   },
-  "webViewMenus": {}
+  "webViewMenus": {
+    "verseRefView.webView": {
+      "includeDefaults": true,
+      "topMenu": {
+        "columns": {},
+        "groups": {},
+        "items": []
+      },
+      "contextMenu": {
+        "groups": {},
+        "items": []
+      }
+    }
+  }
 }
