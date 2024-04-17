@@ -1,10 +1,10 @@
 import { logger } from '@papi/backend';
 
 export async function activate() {
-  logger.info('Extension template is activating!');
+  logger.info('verse-ref-view is activating!');
 }
 
 export async function deactivate() {
-  logger.info('Extension template is deactivating!');
+  logger.info('verse-ref-view is deactivating!');
   return true;
 }
