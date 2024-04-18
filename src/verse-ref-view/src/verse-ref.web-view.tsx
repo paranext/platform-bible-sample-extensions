@@ -35,7 +35,7 @@ function stripUSFM(usfm: string | undefined) {
 /** Stable default ScriptureReference */
 const defaultScrRef: ScriptureReference = { bookNum: 1, chapterNum: 1, verseNum: 1 };
 
-global.webViewComponent = function VerseImageGenerator({
+global.webViewComponent = function VerseRefView({
   useWebViewState,
   updateWebViewDefinition,
 }: WebViewProps) {
