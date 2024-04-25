@@ -1,6 +1,8 @@
 {
   "metadata": {},
   "localizedStrings": {
-    "en": {}
+    "en": {
+      "%mainMenu_openVerseRefView%": "Open Verse Ref View"
+    }
   }
 }
