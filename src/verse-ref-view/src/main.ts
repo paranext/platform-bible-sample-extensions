@@ -25,7 +25,7 @@ async function openVerseRefView(projectId: string | undefined): Promise<string |
     projectIdForWebView = await papi.dialogs.selectProject({
       title: 'Select Project to open with Verse Ref View',
       prompt: 'Choose the project to open with Verse Ref View:',
-      includeProjectTypes: '^ParatextStandard$',
+      includeProjectInterfaces: 'platformScripture.USFM_BookChapterVerse',
     });
   }
   if (projectIdForWebView) {
@@ -48,11 +48,13 @@ const verseRefWebViewProvider: IWebViewProvider = {
 
     // We know that the projectId (if present in the state) will be a string.
     const projectId = getWebViewOptions.projectId || savedWebView.projectId || undefined;
-    const projectsMetadata = projectId
-      ? await papi.projectLookup.getMetadataForProject(projectId)
+    const projectName = projectId
+      ? (await (
+          await papi.projectDataProviders.get('platform.base', projectId)
+        ).getSetting('platform.name')) ?? projectId
       : undefined;
     return {
-      title: getWebViewTitle(projectsMetadata?.name),
+      title: getWebViewTitle(projectName),
       ...savedWebView,
       content: verseRefWebView,
       projectId,
