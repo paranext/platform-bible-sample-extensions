@@ -42,11 +42,21 @@ global.webViewComponent = function VerseRefView({
 }: WebViewProps) {
   const [projects] = usePromise(
     useCallback(async () => {
-      const metadata = await papi.projectLookup.getMetadataForAllProjects();
-      const scriptureProjects = metadata.filter(
-        (projectMetadata) => projectMetadata.projectType === 'ParatextStandard',
+      const projectsMetadata = await papi.projectLookup.getMetadataForAllProjects({
+        includeProjectInterfaces: 'platformScripture.USFM_BookChapterVerse',
+      });
+
+      // Get project names
+      const projectsMetadataDisplay = await Promise.all(
+        projectsMetadata.map(async (projectMetadata) => {
+          const pdp = await papi.projectDataProviders.get('platform.base', projectMetadata.id);
+
+          const name = await pdp.getSetting('platform.name');
+
+          return { ...projectMetadata, name };
+        }),
       );
-      return scriptureProjects;
+      return projectsMetadataDisplay;
     }, []),
     undefined,
   );
@@ -71,7 +81,10 @@ global.webViewComponent = function VerseRefView({
   );
 
   // Get the current verse from the project
-  const [verse] = useProjectData('ParatextStandard', projectId).VerseUSFM(verseRef, '');
+  const [verse] = useProjectData('platformScripture.USFM_BookChapterVerse', projectId).VerseUSFM(
+    verseRef,
+    '',
+  );
 
   return (
     <div className="top">
