@@ -43,7 +43,7 @@ global.webViewComponent = function VerseRefView({
   const [projects] = usePromise(
     useCallback(async () => {
       const projectsMetadata = await papi.projectLookup.getMetadataForAllProjects({
-        includeProjectInterfaces: 'platformScripture.USFM_BookChapterVerse',
+        includeProjectInterfaces: 'platformScripture.USFM_Verse',
       });
 
       // Get project names
@@ -81,10 +81,7 @@ global.webViewComponent = function VerseRefView({
   );
 
   // Get the current verse from the project
-  const [verse] = useProjectData('platformScripture.USFM_BookChapterVerse', projectId).VerseUSFM(
-    verseRef,
-    '',
-  );
+  const [verse] = useProjectData('platformScripture.USFM_Verse', projectId).VerseUSFM(verseRef, '');
 
   return (
     <div className="top">

@@ -25,7 +25,7 @@ async function openVerseRefView(projectId: string | undefined): Promise<string |
     projectIdForWebView = await papi.dialogs.selectProject({
       title: 'Select Project to open with Verse Ref View',
       prompt: 'Choose the project to open with Verse Ref View:',
-      includeProjectInterfaces: 'platformScripture.USFM_BookChapterVerse',
+      includeProjectInterfaces: 'platformScripture.USFM_Verse',
     });
   }
   if (projectIdForWebView) {
