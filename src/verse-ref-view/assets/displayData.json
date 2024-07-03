@@ -1,0 +1,10 @@
+{
+  "icon": "",
+  "localizedDisplayInfo": {
+    "en": {
+      "displayName": "Current Verse Reference Extension",
+      "shortSummary": "Shows the current Verse Reference",
+      "description": "assets/descriptions/description-en.md"
+    }
+  }
+}

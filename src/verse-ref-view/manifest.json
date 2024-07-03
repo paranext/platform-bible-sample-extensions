@@ -1,7 +1,7 @@
 {
   "name": "verseRefView",
   "version": "0.0.1",
-  "description": "Web View that shows the current Verse Reference - Platform.Bible extension",
+  "displayData": "assets/displayData.json",
   "author": "Paranext",
   "license": "MIT",
   "main": "src/main.ts",
