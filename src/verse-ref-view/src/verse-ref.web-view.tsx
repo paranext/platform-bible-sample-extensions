@@ -1,8 +1,8 @@
 import { WebViewProps } from '@papi/core';
 import papi from '@papi/frontend';
-import { useProjectData, useSetting } from '@papi/frontend/react';
+import { useProjectData } from '@papi/frontend/react';
 import { VerseRef } from '@sillsdev/scripture';
-import { ScriptureReference, usePromise } from 'platform-bible-react';
+import { usePromise } from 'platform-bible-react';
 import { useCallback, useMemo } from 'react';
 import { getWebViewTitle } from './utils';
 
@@ -32,13 +32,11 @@ function stripUSFM(usfm: string | undefined) {
   );
 }
 
-/** Stable default ScriptureReference */
-const defaultScrRef: ScriptureReference = { bookNum: 1, chapterNum: 1, verseNum: 1 };
-
 global.webViewComponent = function VerseRefView({
   projectId,
   title,
   updateWebViewDefinition,
+  useWebViewScrollGroupScrRef,
 }: WebViewProps) {
   const [projects] = usePromise(
     useCallback(async () => {
@@ -73,7 +71,7 @@ global.webViewComponent = function VerseRefView({
   );
 
   // Get current verse reference
-  const [scrRef] = useSetting('platform.verseRef', defaultScrRef);
+  const [scrRef] = useWebViewScrollGroupScrRef();
   // Transform ScriptureReference to VerseRef for project data
   const verseRef = useMemo(
     () => new VerseRef(scrRef.bookNum, scrRef.chapterNum, scrRef.verseNum, undefined),
