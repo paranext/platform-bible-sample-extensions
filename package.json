@@ -1,7 +1,7 @@
 {
   "name": "platform-bible-sample-extensions",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "Paranext",
   "license": "MIT",
   "scripts": {
@@ -83,7 +83,9 @@
     "webpack-merge": "^5.10.0",
     "zip-folder-promise": "^1.2.0"
   },
-  "workspaces": ["src/*"],
+  "workspaces": [
+    "src/*"
+  ],
   "volta": {
     "node": "20.11.1"
   }
