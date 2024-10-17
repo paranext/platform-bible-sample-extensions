@@ -7,6 +7,7 @@ import {
   WebViewDefinition,
 } from '@papi/core';
 import verseRefWebView from './verse-ref.web-view?inline';
+import verseRefWebViewStyles from './verse-ref.web-view.scss?inline';
 import { getWebViewTitle } from './utils';
 
 const verseRefWebViewType = 'verseRefView.webView';
@@ -23,8 +24,8 @@ async function openVerseRefView(projectId: string | undefined): Promise<string |
   let projectIdForWebView = projectId;
   if (!projectIdForWebView) {
     projectIdForWebView = await papi.dialogs.selectProject({
-      title: 'Select Project to open with Verse Ref View',
-      prompt: 'Choose the project to open with Verse Ref View:',
+      title: '%verseRefView_dialog_openVerseRefView_title%',
+      prompt: '%verseRefView_dialog_openVerseRefView_prompt%',
       includeProjectInterfaces: 'platformScripture.USFM_Verse',
     });
   }
@@ -49,14 +50,20 @@ const verseRefWebViewProvider: IWebViewProvider = {
     // We know that the projectId (if present in the state) will be a string.
     const projectId = getWebViewOptions.projectId || savedWebView.projectId || undefined;
     const projectName = projectId
-      ? (await (
+      ? ((await (
           await papi.projectDataProviders.get('platform.base', projectId)
-        ).getSetting('platform.name')) ?? projectId
+        ).getSetting('platform.name')) ?? projectId)
       : undefined;
+
+    const titleFormatString = await papi.localization.getLocalizedString({
+      localizeKey: '%verseRefView_title_format%',
+    });
+
     return {
-      title: getWebViewTitle(projectName),
+      title: getWebViewTitle(titleFormatString, projectName),
       ...savedWebView,
       content: verseRefWebView,
+      styles: verseRefWebViewStyles,
       projectId,
     };
   },
