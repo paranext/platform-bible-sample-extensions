@@ -2,7 +2,10 @@
   "metadata": {},
   "localizedStrings": {
     "en": {
-      "%mainMenu_openVerseRefView%": "Open Verse Ref View"
+      "%mainMenu_openVerseRefView%": "Open Verse Ref View",
+      "%verseRefView_dialog_openVerseRefView_title%": "Select Project to open with Verse Ref View",
+      "%verseRefView_dialog_openVerseRefView_prompt%": "Choose the project to open with Verse Ref View:",
+      "%verseRefView_title_format%": "Verse Ref View: {projectName}"
     }
   }
 }

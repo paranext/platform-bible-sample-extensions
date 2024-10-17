@@ -1,9 +1,17 @@
 import { WebViewProps } from '@papi/core';
-import papi from '@papi/frontend';
-import { useProjectData } from '@papi/frontend/react';
+import papi, { logger } from '@papi/frontend';
+import { useLocalizedStrings, useProjectData } from '@papi/frontend/react';
 import { VerseRef } from '@sillsdev/scripture';
-import { usePromise } from 'platform-bible-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  usePromise,
+} from 'platform-bible-react';
 import { useCallback, useMemo } from 'react';
+import { LocalizeKey } from 'platform-bible-utils';
 import { getWebViewTitle } from './utils';
 
 /**
@@ -32,12 +40,17 @@ function stripUSFM(usfm: string | undefined) {
   );
 }
 
+const titleFormatKey = '%verseRefView_title_format%';
+const localizedStringKeys: LocalizeKey[] = [titleFormatKey];
+
 global.webViewComponent = function VerseRefView({
   projectId,
   title,
   updateWebViewDefinition,
   useWebViewScrollGroupScrRef,
 }: WebViewProps) {
+  const [{ [titleFormatKey]: titleFormatString }] = useLocalizedStrings(localizedStringKeys);
+
   const [projects] = usePromise(
     useCallback(async () => {
       const projectsMetadata = await papi.projectLookup.getMetadataForAllProjects({
@@ -61,13 +74,21 @@ global.webViewComponent = function VerseRefView({
 
   const setProjectId = useCallback(
     (pId: string) => {
+      // If localization hasn't come in, just don't set the project id yet
+      if (titleFormatString === titleFormatKey) {
+        logger.warn(
+          `Verse Ref Web View: Localization has not come in yet, so skipping setting project id to ${pId}`,
+        );
+        return;
+      }
+
       const projectName = projects?.find((project) => project.id === pId)?.name;
       updateWebViewDefinition({
-        title: projectName ? getWebViewTitle(projectName) : title,
+        title: projectName ? getWebViewTitle(titleFormatString, projectName) : title,
         projectId: pId,
       });
     },
-    [updateWebViewDefinition, projects, title],
+    [updateWebViewDefinition, projects, title, titleFormatString],
   );
 
   // Get current verse reference
@@ -82,16 +103,26 @@ global.webViewComponent = function VerseRefView({
   const [verse] = useProjectData('platformScripture.USFM_Verse', projectId).VerseUSFM(verseRef, '');
 
   return (
-    <div className="top">
-      <div>
-        {verseRef.toString()}:{' '}
-        <select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-          {projects?.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.name}
-            </option>
-          ))}
-        </select>
+    <div className="tw-m-4">
+      <div className="tw-flex tw-items-center">
+        <div className="tw-flex-shrink-0 tw-me-4">{verseRef.toString()}</div>
+        <Select
+          // Don't allow setting the project id if localization hasn't come in
+          disabled={titleFormatString === titleFormatKey}
+          value={projectId}
+          onValueChange={(pId) => setProjectId(pId)}
+        >
+          <SelectTrigger className="tw-w-auto">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {projects?.map((project) => (
+              <SelectItem key={project.id} value={project.id}>
+                {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div>{stripUSFM(verse)}</div>
     </div>
