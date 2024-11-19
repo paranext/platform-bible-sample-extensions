@@ -184,6 +184,23 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
       papi.scrollGroups.getScrRef().then((scrRef: ScriptureReference) => {
         let bookName = formatScrRef(scrRef, 'English').replace(/^((\d\s)?\w+).*$/, '$1');
         if (scrRef.bookNum === 22) bookName = 'Song of Solomon'; // differently named here
+        if (scrRef.bookNum === 40) bookName = 'Matt';
+        if (scrRef.bookNum === 45) bookName = 'Rom';
+        if (scrRef.bookNum === 46) bookName = '1 Cor';
+        if (scrRef.bookNum === 47) bookName = '2 Cor';
+        if (scrRef.bookNum === 48) bookName = 'Gal';
+        if (scrRef.bookNum === 49) bookName = 'Eph';
+        if (scrRef.bookNum === 50) bookName = 'Phil';
+        if (scrRef.bookNum === 51) bookName = 'Col';
+        if (scrRef.bookNum === 52) bookName = '1 Thess';
+        if (scrRef.bookNum === 53) bookName = '2 Thess';
+        if (scrRef.bookNum === 54) bookName = '1 Tim';
+        if (scrRef.bookNum === 55) bookName = '2 Tim';
+        if (scrRef.bookNum === 57) bookName = 'Phlm';
+        if (scrRef.bookNum === 58) bookName = 'Heb';
+        if (scrRef.bookNum === 60) bookName = '1 Pet';
+        if (scrRef.bookNum === 61) bookName = '2 Pet';
+        if (scrRef.bookNum === 66) bookName = 'Rev';
         return `https://marble.bible/text?book=${bookName}&chapter=${scrRef.chapterNum}&verse=${scrRef.verseNum}`;
       }),
     webResourceName: 'UBS Marble',
