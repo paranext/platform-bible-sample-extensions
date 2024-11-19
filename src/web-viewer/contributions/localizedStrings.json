@@ -1,0 +1,16 @@
+{
+  "metadata": {},
+  "localizedStrings": {
+    "en": {
+      "%mainMenu_webViewer%": "Web Viewer",
+      "%webViewer_title_format%": "Web Viewer: {resourceName}",
+      "%webViewerMenu_codesandbox%": "Open codesandbox Settings UI mockup",
+      "%webViewerMenu_openPT9VideoWebViewer%": "Video: What is PT9 (Vimeo)",
+      "%webViewerMenu_openPT9HelpWebViewer%": "Watch Paratext 9 training videos (paratext.org)",
+      "%webViewerMenu_openUsfmDocsHelpWebViewer%": "USFM 3.1 Documentation",
+      "%webViewerMenu_openOTNWebViewer%": "Open Translators Notes (SIL)",
+      "%webViewerMenu_openMarbleWebViewer%": "Marble (UBS)",
+      "%webViewerMenu_openWiBiLexWebViewer%": "WiBiLex (German Bible Society)"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "webViewer",
+  "version": "0.1.0",
+  "displayData": "assets/displayData.json",
+  "author": "Paranext",
+  "license": "MIT",
+  "main": "src/main.ts",
+  "extensionDependencies": {},
+  "elevatedPrivileges": [],
+  "types": "src/types/web-viewer.d.ts",
+  "menus": "contributions/menus.json",
+  "settings": "contributions/settings.json",
+  "projectSettings": "contributions/projectSettings.json",
+  "localizedStrings": "contributions/localizedStrings.json",
+  "activationEvents": []
+}

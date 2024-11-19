@@ -1,0 +1,72 @@
+{
+  "mainMenu": {
+    "columns": {},
+    "groups": {
+      "webViewer.openGroup": {
+        "menuItem": "webViewer.mainMenu",
+        "order": 2711
+      }
+    },
+    "items": [
+      {
+        "label": "%mainMenu_webViewer%",
+        "localizeNotes": "Application main menu > Open Web Viewer",
+        "group": "platform.projectResources",
+        "order": -84,
+        "id": "webViewer.mainMenu"
+      },
+      {
+        "label": "%webViewerMenu_codesandbox%",
+        "group": "webViewer.openGroup",
+        "order": -99,
+        "command": "webViewer.opencodesandbox"
+      },
+      {
+        "label": "%webViewerMenu_openPT9VideoWebViewer%",
+        "group": "webViewer.openGroup",
+        "order": -5,
+        "command": "webViewer.openPT9Video"
+      },
+      {
+        "label": "%webViewerMenu_openPT9HelpWebViewer%",
+        "group": "webViewer.openGroup",
+        "order": -4,
+        "command": "webViewer.openPT9Help"
+      },
+      {
+        "label": "%webViewerMenu_openUsfmDocsHelpWebViewer%",
+        "group": "webViewer.openGroup",
+        "order": -3,
+        "command": "webViewer.openUsfmDocs"
+      },
+      {
+        "label": "%webViewerMenu_openOTNWebViewer%",
+        "group": "webViewer.openGroup",
+        "order": 0,
+        "command": "webViewer.openOTN"
+      },
+      {
+        "label": "%webViewerMenu_openMarbleWebViewer%",
+        "group": "webViewer.openGroup",
+        "order": 1,
+        "command": "webViewer.openMarble"
+      },
+      {
+        "label": "%webViewerMenu_openWiBiLexWebViewer%",
+        "group": "webViewer.openGroup",
+        "order": 2,
+        "command": "webViewer.openWiBiLex"
+      }
+    ]
+  },
+  "defaultWebViewTopMenu": {
+    "columns": {},
+    "groups": {},
+    "items": []
+  },
+  "defaultWebViewContextMenu": {
+    "groups": {},
+    "items": []
+  },
+  "webViewMenus": {}
+}
