@@ -16,10 +16,10 @@
         "id": "webViewer.mainMenu"
       },
       {
-        "label": "%webViewerMenu_codesandbox%",
+        "label": "%webViewerMenu_codeSandbox%",
         "group": "webViewer.openGroup",
         "order": -99,
-        "command": "webViewer.opencodesandbox"
+        "command": "webViewer.openCodeSandbox"
       },
       {
         "label": "%webViewerMenu_openPT9VideoWebViewer%",

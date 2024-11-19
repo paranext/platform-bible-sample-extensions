@@ -10,15 +10,14 @@ import {
 } from '@papi/core';
 
 import { VerseRef } from '@sillsdev/scripture';
-import { formatScrRef, ScriptureReference } from 'platform-bible-utils';
-import { getWebViewTitle } from './utils';
-import { ScrollGroupUpdateInfo } from 'shared/services/scroll-group.service-model';
 import { CommandHandlers } from 'papi-shared-types';
-import { log } from 'console';
-import { UpdateWebViewEvent } from 'shared/services/web-view.service-model';
+import { formatScrRef, ScriptureReference } from 'platform-bible-utils';
+import { ScrollGroupUpdateInfo } from 'shared/services/scroll-group.service-model';
+import { CloseWebViewEvent } from 'shared/services/web-view.service-model';
+import { getWebViewTitle } from './utils';
 
 const WEB_VIEWER_WEBVIEW_TYPE = 'webViewer.webView';
-const USER_SETTING_KEY = 'webViewIds';
+const USER_DATA_KEY = 'webViewIds';
 let executionToken: ExecutionToken;
 let oldRef: ScriptureReference;
 
@@ -55,14 +54,14 @@ async function openWebViewer({
   logger.info(`web-viewer: retrieved command to open a web viewer`);
   const webViewOptions = {
     openResourceCommand,
-    // use existing id to open only 1 instance of a resource type.
-    // reverse lookup in the map, that should be unique as well
+    // use existing id to open only 1 instance of a web view type.
+    // reverse lookup of the webview id in the map. This should be undefined or a unique id.
     existingId: Array.from(commandByWebViewId.entries()).find(
       ([, command]) => command === openResourceCommand,
     )?.[0],
   };
 
-  return papi.webViews.getWebView(WEB_VIEWER_WEBVIEW_TYPE, undefined, webViewOptions);
+  return papi.webViews.openWebView(WEB_VIEWER_WEBVIEW_TYPE, undefined, webViewOptions);
 }
 
 /** Simple web view provider that provides Web Viewer views when papi requests them */
@@ -79,23 +78,9 @@ const webViewerWebViewProvider: IWebViewProvider = {
 
     if (basicOptions.openResourceCommand) {
       commandByWebViewId.set(savedWebView.id, basicOptions.openResourceCommand);
-      logger.warn(`basicOptions.openResourceCommand ${basicOptions.openResourceCommand}`);
     }
     const command = basicOptions.openResourceCommand ?? commandByWebViewId.get(savedWebView.id);
-    logger.warn(`command ${command}`);
     const options: WebViewerOptionsForMap = resourceOptions.get(command) || SATISFY_TS_OPTIONS;
-    logger.warn(`options ${JSON.stringify(options)}`);
-
-    /*     const key = `${USER_SETTING_KEY}+${getWebViewOptions.webResourceName}`;
-    const value = {...getWebViewOptions, existingId: savedWebView.id};
-    if (getWebViewOptions) {
-      papi.storage.writeUserData(executionToken, key, JSON.stringify(value))
-    } else {
-      await papi.storage.readUserData(executionToken, key).then((value: string) => {
-        webViewIds.set()
-        getWebViewOptions = JSON.parse(value);
-      });
-    } */
 
     const url = await options.getUrl();
 
@@ -103,11 +88,12 @@ const webViewerWebViewProvider: IWebViewProvider = {
       localizeKey: '%webViewer_title_format%',
     });
 
-    logger.error(`web-viewer is opening url ${url}, options: ${JSON.stringify(options)}`);
+    logger.info(`web-viewer is opening url ${url}, options: ${JSON.stringify(options)}`);
 
     return {
       ...savedWebView,
-      // TODO: When using the WebviewService (e.g. on startup) the options are not passed and so no url is undefined
+      // TODO: When using the WebviewService (e.g. on startup) the options are not passed and so the url is undefined
+      // TODO: papi.storage.writeUserData will likely not be able to store the getUrl function
       content: url,
       // work around for bad enum export in papi
       // eslint-disable-next-line no-type-assertion/no-type-assertion
@@ -153,11 +139,11 @@ function resolveUrl(url: string) {
 export async function activate(context: ExecutionActivationContext): Promise<void> {
   logger.info('web-viewer is activating!');
 
-  //executionToken = context.executionToken;
+  executionToken = context.executionToken;
 
   const sandboxWebViewerOptions: WebViewerOptionsForMap = {
     getUrl: resolveUrl('https://sykc6v-3000.csb.app/'),
-    webResourceName: 'codesandbox Settings UI mockup',
+    webResourceName: 'CodeSandbox Settings UI mockup',
   };
   const pt9VideoOptions: WebViewerOptionsForMap = {
     getUrl: resolveUrl(
@@ -209,7 +195,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
   };
 
   resourceOptions = new Map<keyof CommandHandlers, WebViewerOptionsForMap>([
-    ['webViewer.opencodesandbox', sandboxWebViewerOptions], // TODO SL: remove, this is for testing purpose
+    ['webViewer.openCodeSandbox', sandboxWebViewerOptions],
     ['webViewer.openPT9Video', pt9VideoOptions],
     ['webViewer.openPT9Help', pt9VHelpOptions],
     ['webViewer.openUsfmDocs', usfmDocsOptions],
@@ -225,13 +211,12 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
   });
 
   // When the scripture reference changes, re-render the last webview of type "webViewerWebViewType"
-  // TODO: this would re-open closed webviews on every ref change!
   papi.scrollGroups.onDidUpdateScrRef((scrollGroupUpdateInfo: ScrollGroupUpdateInfo) => {
     const updateWebViewPromises = Array.from(commandByWebViewId.entries())
       // filter web views of a type that is listening for ref changes
       .filter(([, commandKey]) => shouldUpdateOnRefChange(commandKey, scrollGroupUpdateInfo.scrRef))
       .map(([id]) =>
-        papi.webViews.getWebView(
+        papi.webViews.openWebView(
           WEB_VIEWER_WEBVIEW_TYPE,
           undefined,
           { existingId: id }, // get webView by existingId (without the possibility to pass additional options)
@@ -243,6 +228,13 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     return Promise.all(updateWebViewPromises);
   });
 
+  // clean up webviews from the map, so that no unexpected empty tabs appear on changing ref after closing tabs
+  papi.webViews.onDidCloseWebView((closeWebViewEvent: CloseWebViewEvent) => {
+    if (commandByWebViewId.has(closeWebViewEvent.webView.id)) {
+      commandByWebViewId.delete(closeWebViewEvent.webView.id);
+    }
+  });
+
   // initialize scripture reference for granular change detection
   await papi.scrollGroups
     .getScrRef()
@@ -250,7 +242,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     .then((ref) => (oldRef = ref))
     .catch((e) => logger.warn('Could not set initial ref', e));
 
-  const webViewerWebViewProviderPromise = papi.webViewProviders.register(
+  const webViewerWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
     WEB_VIEWER_WEBVIEW_TYPE,
     webViewerWebViewProvider,
   );
