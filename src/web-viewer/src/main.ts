@@ -17,13 +17,14 @@ import { CloseWebViewEvent } from 'shared/services/web-view.service-model';
 import { getWebViewTitle } from './utils';
 
 const WEB_VIEWER_WEBVIEW_TYPE = 'webViewer.webView';
-const USER_DATA_KEY = 'webViewIds';
+const USER_DATA_KEY = 'webViewTypeById_';
 let executionToken: ExecutionToken;
 let oldRef: ScriptureReference;
 
 let resourceOptions: Map<keyof CommandHandlers, WebViewerOptionsForMap>;
 const commandByWebViewId = new Map<string, keyof CommandHandlers>();
 
+// satisfy typescript, although we do not expect these to appear
 const SATISFY_TS_KEY: keyof CommandHandlers = 'dummy.dummy';
 const SATISFY_TS_OPTIONS: WebViewerOptionsForMap = {
   getUrl: resolveUrl(''),
@@ -64,7 +65,7 @@ async function openWebViewer({
   return papi.webViews.openWebView(WEB_VIEWER_WEBVIEW_TYPE, undefined, webViewOptions);
 }
 
-/** Simple web view provider that provides Web Viewer views when papi requests them */
+/** Simple web view provider that provides Web Viewer web views when papi requests them */
 const webViewerWebViewProvider: IWebViewProvider = {
   async getWebView(
     savedWebView: SavedWebViewDefinition,
@@ -76,24 +77,32 @@ const webViewerWebViewProvider: IWebViewProvider = {
       );
     }
 
+    const userDataKey = `${USER_DATA_KEY}${savedWebView.id}`;
     if (basicOptions.openResourceCommand) {
+      // store command by webview id to be able get options only based on the webview id
       commandByWebViewId.set(savedWebView.id, basicOptions.openResourceCommand);
+      // persist to user data to survive app restart
+      papi.storage.writeUserData(executionToken, userDataKey, basicOptions.openResourceCommand);
     }
-    const command = basicOptions.openResourceCommand ?? commandByWebViewId.get(savedWebView.id);
+    const command =
+      basicOptions.openResourceCommand ??
+      commandByWebViewId.get(savedWebView.id) ?? // read from in-memory map when not called via a command
+      (await papi.storage.readUserData(executionToken, userDataKey)); // read from persisted user data after app restart
+    if (!commandByWebViewId.get(savedWebView.id)) {
+      // repopulate in-memory map after reading from persisted user data to enable scripture reference change watching
+      commandByWebViewId.set(savedWebView.id, command);
+    }
     const options: WebViewerOptionsForMap = resourceOptions.get(command) || SATISFY_TS_OPTIONS;
 
     const url = await options.getUrl();
+    logger.log(`web-viewer is opening url ${url}, options: ${JSON.stringify(options)}`);
 
     const titleFormatString = await papi.localization.getLocalizedString({
       localizeKey: '%webViewer_title_format%',
     });
 
-    logger.info(`web-viewer is opening url ${url}, options: ${JSON.stringify(options)}`);
-
     return {
       ...savedWebView,
-      // TODO: When using the WebviewService (e.g. on startup) the options are not passed and so the url is undefined
-      // TODO: papi.storage.writeUserData will likely not be able to store the getUrl function
       content: url,
       // work around for bad enum export in papi
       // eslint-disable-next-line no-type-assertion/no-type-assertion
@@ -128,19 +137,24 @@ function shouldUpdateOnRefChange(
   }
 }
 
-function range(start: number, end: number) {
-  return [...Array(start).keys()].filter((i) => i >= end);
-}
-
 function resolveUrl(url: string) {
   return () => Promise.resolve(url);
 }
 
-export async function activate(context: ExecutionActivationContext): Promise<void> {
-  logger.info('web-viewer is activating!');
+function range(start: number, end: number) {
+  if (start > end)
+    logger.warn(`web-viewer: range(${start}, ${end}) is invalid. End must be after the start.`);
+  return [...Array(end + 1).keys()].filter((i) => i >= start);
+}
 
-  executionToken = context.executionToken;
+function englishBookNameMarble(scrRef: ScriptureReference) {
+  return formatScrRef(scrRef, 'English').replace(/^((\d\s)?\w+).*$/, '$1'); // e.g. 1 Corinthians
+}
+function englishBookNameOtn(scrRef: ScriptureReference) {
+  return formatScrRef(scrRef, 'English').replace(/^((\d)\s)?(\w+).*$/, '$3$1'); // e.g. Corinthians1
+}
 
+function registerCommandHandlers() {
   const sandboxWebViewerOptions: WebViewerOptionsForMap = {
     getUrl: resolveUrl('https://sykc6v-3000.csb.app/'),
     webResourceName: 'CodeSandbox Settings UI mockup',
@@ -159,7 +173,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     getUrl: resolveUrl('https://docs.usfm.bible/usfm/3.1/index.html'),
     webResourceName: 'Usfm Docs',
   };
-  const availableOtnBooks = [8, 17, 20, 27, 28, 33, 39, 41, 43, ...range(45, 57), ...range(59, 66)];
+  const availableOtnBooks = [6, 8, 17, 20, 27, 28, 33, 39, ...range(40, 46), ...range(48, 66)]; // with added books this may be outdated soon
   const otnOptions: WebViewerOptionsForMap = {
     getUrl: () =>
       papi.scrollGroups.getScrRef().then((scrRef: ScriptureReference) => {
@@ -170,37 +184,48 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
           scrRef.verseNum,
           undefined,
         );
-        let bookName = verseRef.book.toLowerCase();
-        if (bookName === 'est') bookName = 'eth'; // different key for Esther
-        return availableOtnBooks.includes(scrRef.bookNum)
-          ? `https://opentn.bible/search/?testament=${otNtUrlParam}&book=${bookName}`
-          : 'https://opentn.bible/';
+        const hasEnglishBookName = [40, 42, ...range(44, 53), 56, 45, ...range(58, 61), 65];
+        let bookName = hasEnglishBookName.includes(scrRef.bookNum)
+          ? englishBookNameOtn(scrRef)
+          : verseRef.book;
+        if (verseRef.book === 'EST') bookName = 'eth'; // different key for Esther
+
+        if (availableOtnBooks.includes(scrRef.bookNum))
+          return `https://opentn.bible/search/?testament=${otNtUrlParam}&book=${bookName.toLowerCase()}`;
+
+        logger.warn(
+          `web-viewer: OTN: ${verseRef.book} not available in OTN, routing to the main page`,
+        );
+        return 'https://opentn.bible/';
       }),
     webResourceName: 'SIL OTN',
-    watchRefChange: RefChange.WATCH_CHAPTER_CHANGE,
+    watchRefChange: RefChange.WATCH_BOOK_CHANGE,
   };
   const marbleOptions: WebViewerOptionsForMap = {
     getUrl: () =>
       papi.scrollGroups.getScrRef().then((scrRef: ScriptureReference) => {
-        let bookName = formatScrRef(scrRef, 'English').replace(/^((\d\s)?\w+).*$/, '$1');
-        if (scrRef.bookNum === 22) bookName = 'Song of Solomon'; // differently named here
-        if (scrRef.bookNum === 40) bookName = 'Matt';
-        if (scrRef.bookNum === 45) bookName = 'Rom';
-        if (scrRef.bookNum === 46) bookName = '1 Cor';
-        if (scrRef.bookNum === 47) bookName = '2 Cor';
-        if (scrRef.bookNum === 48) bookName = 'Gal';
-        if (scrRef.bookNum === 49) bookName = 'Eph';
-        if (scrRef.bookNum === 50) bookName = 'Phil';
-        if (scrRef.bookNum === 51) bookName = 'Col';
-        if (scrRef.bookNum === 52) bookName = '1 Thess';
-        if (scrRef.bookNum === 53) bookName = '2 Thess';
-        if (scrRef.bookNum === 54) bookName = '1 Tim';
-        if (scrRef.bookNum === 55) bookName = '2 Tim';
-        if (scrRef.bookNum === 57) bookName = 'Phlm';
-        if (scrRef.bookNum === 58) bookName = 'Heb';
-        if (scrRef.bookNum === 60) bookName = '1 Pet';
-        if (scrRef.bookNum === 61) bookName = '2 Pet';
-        if (scrRef.bookNum === 66) bookName = 'Rev';
+        let bookName = englishBookNameMarble(scrRef);
+        const otherBookNames: Record<number, string> = {
+          22: 'Song of Solomon',
+          40: 'Matt',
+          45: 'Rom',
+          46: '1 Cor',
+          47: '2 Cor',
+          48: 'Gal',
+          49: 'Eph',
+          50: 'Phil',
+          51: 'Col',
+          52: '1 Thess',
+          53: '2 Thess',
+          54: '1 Tim',
+          55: '2 Tim',
+          57: 'Phlm',
+          58: 'Heb',
+          60: '1 Pet',
+          61: '2 Pet',
+          66: 'Rev',
+        };
+        bookName = otherBookNames[scrRef.bookNum] ?? bookName;
         return `https://marble.bible/text?book=${bookName}&chapter=${scrRef.chapterNum}&verse=${scrRef.verseNum}`;
       }),
     webResourceName: 'UBS Marble',
@@ -221,24 +246,38 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     ['webViewer.openWiBiLex', wiBiLexOptions],
   ]);
 
-  const commandPromises = Array.from(resourceOptions.entries()).map(([command, options]) => {
+  return Array.from(resourceOptions.entries()).map(([command, options]) => {
     return papi.commands.registerCommand(command, () =>
       openWebViewer({ ...options, openResourceCommand: command }),
     );
   });
+}
+
+export async function activate(context: ExecutionActivationContext): Promise<void> {
+  logger.info('web-viewer is activating!');
+
+  executionToken = context.executionToken;
+
+  const commandPromises = registerCommandHandlers();
 
   // When the scripture reference changes, re-render the last webview of type "webViewerWebViewType"
   papi.scrollGroups.onDidUpdateScrRef((scrollGroupUpdateInfo: ScrollGroupUpdateInfo) => {
+    logger.debug(
+      `web-viewer: Scrollgroup update: ${scrollGroupUpdateInfo.scrRef.bookNum}, ${commandByWebViewId.size} web viewer webviews in memory`,
+    );
     const updateWebViewPromises = Array.from(commandByWebViewId.entries())
       // filter web views of a type that is listening for ref changes
       .filter(([, commandKey]) => shouldUpdateOnRefChange(commandKey, scrollGroupUpdateInfo.scrRef))
-      .map(([id]) =>
-        papi.webViews.openWebView(
+      .map(([id]) => {
+        logger.debug(
+          `web-viewer: Updating webview with id: ${id}, command: ${commandByWebViewId.get(id)}`,
+        );
+        return papi.webViews.openWebView(
           WEB_VIEWER_WEBVIEW_TYPE,
           undefined,
           { existingId: id }, // get webView by existingId (without the possibility to pass additional options)
-        ),
-      );
+        );
+      });
 
     oldRef = scrollGroupUpdateInfo.scrRef;
 
@@ -257,7 +296,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     .getScrRef()
     // eslint-disable-next-line no-return-assign
     .then((ref) => (oldRef = ref))
-    .catch((e) => logger.warn('Could not set initial ref', e));
+    .catch((e) => logger.warn('web-viewer: Could not set initial ref', e));
 
   const webViewerWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
     WEB_VIEWER_WEBVIEW_TYPE,
