@@ -4,9 +4,9 @@
   "supportUrl": "",
   "localizedDisplayInfo": {
     "en": {
-      "displayName": "Paranext Extension Template",
-      "shortSummary": "Base template for a Platform.Bible Extension",
-      "description": "assets/descriptions/description-en.md"
+      "displayName": "Website Viewer",
+      "shortSummary": "Extension to render websites inside Platform.Bible",
+      "description": "README.md"
     }
   }
 }

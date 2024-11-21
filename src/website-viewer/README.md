@@ -1,8 +1,14 @@
-# paranext-extension-template
+# website-viewer
 
-Basic extension template for Platform.Bible
+Extension to render websites inside Platform.Bible
+This includes
 
-<!-- <!-- Opening comment tag for Template Info Section. Ignore this for now. More info in [Hide Template Info](#hide-template-info). -->
+- Showing how to add commands that spawn web pages inside of Platform
+- example web pages
+- reloading pages on scripture reference and scroll group changes, so that web pages stay up to date with the current scripture reference
+- retaining the web page on layout changes and restart of Platform
+
+<!-- <!-- Opening comment tag for Template Info Section. Ignore this for now. More info in [Hide Template Info](#hide-template-info).
 
 ## Template Info
 
@@ -75,7 +81,7 @@ Once finished customizing this template to be your own, you can uncomment the [H
 
 Note: if you [update this extension from the template](#to-update-this-extension-from-the-template), there may be important changes in this section like additional customizations you must make to this extension. Please keep an eye out for readme changes when updating from the template.
 
-<!-- Closing comment tag for Template Info Section -->
+Closing comment tag for Template Info Section -->
 
 ## Summary
 
@@ -85,7 +91,7 @@ The general file structure is as follows:
 - `manifest.json` is the manifest file that defines the extension and important properties for Platform.Bible. It is copied into the build folder
 - `src/` contains the source code for the extension
   - `src/main.ts` is the main entry file for the extension
-  - `src/types/paranext-extension-template.d.ts` is this extension's types file that defines how other extensions can use this extension through the `papi`. It is copied into the build folder
+  - `src/types/website-viewer.d.ts` is this extension's types file that defines how other extensions can use this extension through the `papi`. It is copied into the build folder
   - `*.web-view.tsx` files will be treated as React WebViews
   - `*.web-view.html` files are a conventional way to provide HTML WebViews (no special functionality)
 - `assets/` contains asset files the extension and its WebViews can retrieve using the `papi-extension:` protocol, as well as textual descriptions in various languages. It is copied into the build folder
