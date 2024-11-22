@@ -122,6 +122,15 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
     websiteName: 'GBS WiBiLex',
   };
 
+  const youVersionVerseViewOtions: WebsiteViewerOptions = {
+    getUrl: (scrRef: ScriptureReference) => {
+      const verseRef = new VerseRef(scrRef.bookNum, scrRef.chapterNum, scrRef.verseNum, undefined);
+      return `https://www.bible.com/en-GB/bible/1/${verseRef.book}.${scrRef.chapterNum}.${scrRef.verseNum}`;
+    },
+    websiteName: 'YouVersion',
+    watchRefChange: RefChange.WATCH_VERSE_CHANGE,
+  };
+
   return new Map<keyof CommandHandlers, WebsiteViewerOptions>([
     ['websiteViewer.openCodeSandbox', sandboxWebsiteViewerOptions],
     ['websiteViewer.openPT9Video', pt9VideoOptions],
@@ -130,5 +139,6 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
     ['websiteViewer.openOTN', otnOptions],
     ['websiteViewer.openMarble', marbleOptions],
     ['websiteViewer.openWiBiLex', wiBiLexOptions],
+    ['websiteViewer.openYouVersionVerse', youVersionVerseViewOtions],
   ]);
 }

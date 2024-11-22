@@ -56,6 +56,12 @@
         "group": "website-viewer.openGroup",
         "order": 2,
         "command": "websiteViewer.openWiBiLex"
+      },
+      {
+        "label": "%websiteViewerMenu_openYouVersionVerseView%",
+        "group": "website-viewer.openGroup",
+        "order": 3,
+        "command": "websiteViewer.openYouVersionVerse"
       }
     ]
   },

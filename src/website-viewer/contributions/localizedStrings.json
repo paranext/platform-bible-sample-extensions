@@ -10,7 +10,8 @@
       "%websiteViewerMenu_openUsfmDocsHelpWebsiteViewer%": "USFM 3.1 Documentation",
       "%websiteViewerMenu_openOTNWebsiteViewer%": "Open Translators Notes (SIL)",
       "%websiteViewerMenu_openMarbleWebsiteViewer%": "Marble (UBS)",
-      "%websiteViewerMenu_openWiBiLexWebsiteViewer%": "WiBiLex (German Bible Society)"
+      "%websiteViewerMenu_openWiBiLexWebsiteViewer%": "WiBiLex (German Bible Society)",
+      "%websiteViewerMenu_openYouVersionVerseView%": "YouVersion verse view"
     }
   }
 }

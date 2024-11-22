@@ -61,6 +61,15 @@ declare module 'papi-shared-types' {
     'websiteViewer.openWiBiLex': () => Promise<string | undefined>;
 
     /**
+     * Opens a new Website Viewer web view with a YouVersion verse display and returns the web view
+     * id
+     *
+     * @returns From return value of openWebView: Promise that resolves to the ID of the webview we
+     *   got or undefined if the provider did not create a WebView for this request
+     */
+    'websiteViewer.openYouVersionVerse': () => Promise<string | undefined>;
+
+    /**
      * Dummy to use in strictly typed Maps
      *
      * @returns
