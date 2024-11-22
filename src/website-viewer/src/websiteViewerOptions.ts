@@ -14,6 +14,10 @@ export const SATISFY_TS_KEY: keyof CommandHandlers = 'dummy.dummy';
 export const SATISFY_TS_OPTIONS: WebsiteViewerOptions = {
   getUrl: () => '',
   websiteName: '',
+  // TODO: could be improved by passing in the selected tab of the active tab
+  // (e.g. for a lexicon or Marble to scroll to / highlight a word)
+  // for demo purpose this text could for now come from a setting, where users can copy it into
+  // alternatively an input on the main toolbar - if extensions can do a thing like adding controls to the main toolbar
 };
 
 export enum RefChange {
