@@ -46,11 +46,11 @@ let websiteOptions: Map<keyof CommandHandlers, WebsiteViewerOptions>;
 const commandByWebViewId = new Map<string, keyof CommandHandlers>();
 const scrollGroupInfoByWebViewId = new Map<string, ScrollGroupInfo>();
 
-/** Function to open a Web Viewer. Registered as a command handler. */
+/** Function to open a Website Viewer. Registered as a command handler. */
 async function openWebsiteViewerOfType({
   openWebsiteCommand,
 }: BasicWebsiteViewerOptions): Promise<string | undefined> {
-  logger.info(`web-viewer: retrieved command to open a web viewer`);
+  logger.info(`website-viewer: retrieved command to open a Website`);
   const webViewOptions = {
     openWebsiteCommand,
     // use existing id to open only 1 instance of a web view type.
@@ -63,6 +63,7 @@ async function openWebsiteViewerOfType({
   return papi.webViews.openWebView(WEBSITE_VIEWER_WEBVIEW_TYPE, undefined, webViewOptions);
 }
 
+// TODO: combine with openWebsiteViewerOfType
 function reOpenWebsiteViewerFromExistingId(existingWebViewId: string) {
   // get webView by existingId (without the possibility to pass WebsiteViewer specific options)
   return papi.webViews.openWebView(WEBSITE_VIEWER_WEBVIEW_TYPE, undefined, {
@@ -70,7 +71,7 @@ function reOpenWebsiteViewerFromExistingId(existingWebViewId: string) {
   });
 }
 
-/** Simple web view provider that provides Web Viewer web views when papi requests them */
+/** Simple web view provider that provides Website Viewer web views when papi requests them */
 const websiteViewerWebViewProvider: IWebViewProvider = {
   async getWebView(
     savedWebView: SavedWebViewDefinition,
@@ -210,7 +211,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
   // This is not fired in case of "no scroll group", this is handled inside the scroll group change code
   papi.scrollGroups.onDidUpdateScrRef((scrollGroupUpdateInfo: ScrollGroupUpdateInfo) => {
     logger.debug(
-      `web-viewer: ScriptureRef changed for scrollGroup ${scrollGroupUpdateInfo.scrollGroupId}: ${commandByWebViewId.size} web viewer webviews in memory`,
+      `website-viewer: ScriptureRef changed for scrollGroup ${scrollGroupUpdateInfo.scrollGroupId}: ${commandByWebViewId.size} Website Viewer web views in memory`,
     );
     const updateWebViewPromises = Array.from(commandByWebViewId.entries())
       // filter web views of a type that is listening for ref changes
@@ -223,7 +224,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
       )
       .map(([webViewId]) => {
         logger.debug(
-          `web-viewer: Updating webview with id: ${webViewId}, command: ${commandByWebViewId.get(webViewId)}`,
+          `website-viewer: Updating webview with id: ${webViewId}, command: ${commandByWebViewId.get(webViewId)}`,
         );
         return reOpenWebsiteViewerFromExistingId(webViewId);
       });
@@ -231,7 +232,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     return Promise.all(updateWebViewPromises);
   });
 
-  // listen to scroll group changes for web viewer web views
+  // listen to scroll group changes for Website Viewer web views
   papi.webViews.onDidUpdateWebView((updateWebViewEvent: UpdateWebViewEvent) => {
     const webViewId = updateWebViewEvent.webView.id;
     if (!commandByWebViewId.has(webViewId)) return;

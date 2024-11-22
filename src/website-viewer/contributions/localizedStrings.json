@@ -2,8 +2,8 @@
   "metadata": {},
   "localizedStrings": {
     "en": {
-      "%mainMenu_websiteViewer%": "Web Viewer",
-      "%websiteViewer_title_format%": "Web Viewer: {resourceName}",
+      "%mainMenu_websiteViewer%": "Website Viewer",
+      "%websiteViewer_title_format%": "{resourceName} (website viewer)",
       "%websiteViewerMenu_codeSandbox%": "Open codesandbox Settings UI mockup",
       "%websiteViewerMenu_openPT9VideoWebsiteViewer%": "Video: What is PT9 (Vimeo)",
       "%websiteViewerMenu_openPT9HelpWebsiteViewer%": "Watch Paratext 9 training videos (paratext.org)",

@@ -3,52 +3,60 @@ declare module 'website-viewer' {}
 declare module 'papi-shared-types' {
   export interface CommandHandlers {
     /**
-     * V0
+     * Opens a new Website Viewer web view with a code sandbox mockup and returns the web view id
      *
-     * @returns WebView id for new WebView or `undefined` if the user canceled the dialog
+     * @returns From return value of openWebView: Promise that resolves to the ID of the webview we
+     *   got or undefined if the provider did not create a WebView for this request
      */
     'websiteViewer.openCodeSandbox': () => Promise<string | undefined>;
 
     /**
-     * Opens a new Web Viewer Web View with a PT9 Video from Vimeo and returns the Web View id
+     * Opens a new Website Viewer web view with a PT9 Video from Vimeo and returns the web view id
      *
-     * @returns WebView id for new WebView or `undefined` if the user canceled the dialog
+     * @returns From return value of openWebView: Promise that resolves to the ID of the webview we
+     *   got or undefined if the provider did not create a WebView for this request
      */
     'websiteViewer.openPT9Video': () => Promise<string | undefined>;
 
     /**
-     * Opens a new Web Viewer Web View with the paratext.org Help website and returns the Web View
-     * id
+     * Opens a new Website Viewer web view with the paratext.org help website and returns the web
+     * view id
      *
-     * @returns WebView id for new WebView or `undefined` if the user canceled the dialog
+     * @returns From return value of openWebView: Promise that resolves to the ID of the webview we
+     *   got or undefined if the provider did not create a WebView for this request
      */
     'websiteViewer.openPT9Help': () => Promise<string | undefined>;
 
     /**
-     * Opens a new Web Viewer Web View with the USFM Docs website and returns the Web View id
+     * Opens a new Website Viewer web view with the USFM Docs website and returns the web view id
      *
-     * @returns WebView id for new WebView or `undefined` if the user canceled the dialog
+     * @returns From return value of openWebView: Promise that resolves to the ID of the webview we
+     *   got or undefined if the provider did not create a WebView for this request
      */
     'websiteViewer.openUsfmDocs': () => Promise<string | undefined>;
 
     /**
-     * Opens a new Web Viewer Web View for SIL Open Translator Notes and returns the Web View id
+     * Opens a new Website Viewer web view for SIL Open Translator Notes and returns the web view id
      *
-     * @returns WebView id for new WebView or `undefined` if the user canceled the dialog
+     * @returns From return value of openWebView: Promise that resolves to the ID of the webview we
+     *   got or undefined if the provider did not create a WebView for this request
      */
     'websiteViewer.openOTN': () => Promise<string | undefined>;
 
     /**
-     * Opens a new Web Viewer Web View for UBS Marble and returns the Web View id
+     * Opens a new Website Viewer web view for UBS Marble and returns the web view id
      *
-     * @returns WebView id for new WebView or `undefined` if the user canceled the dialog
+     * @returns From return value of openWebView: Promise that resolves to the ID of the webview we
+     *   got or undefined if the provider did not create a WebView for this request
      */
     'websiteViewer.openMarble': () => Promise<string | undefined>;
 
     /**
-     * Opens a new Web Viewer Web View for German Bible Society WiBiLex and returns the Web View id
+     * Opens a new Website Viewer web view for German Bible Society WiBiLex and returns the web view
+     * id
      *
-     * @returns WebView id for new WebView or `undefined` if the user canceled the dialog
+     * @returns From return value of openWebView: Promise that resolves to the ID of the webview we
+     *   got or undefined if the provider did not create a WebView for this request
      */
     'websiteViewer.openWiBiLex': () => Promise<string | undefined>;
 
