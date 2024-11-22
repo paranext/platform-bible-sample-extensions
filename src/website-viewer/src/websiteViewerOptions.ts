@@ -114,7 +114,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
       return `https://marble.bible/text?book=${bookName}&chapter=${scrRef.chapterNum}&verse=${scrRef.verseNum}`;
     },
     websiteName: 'UBS Marble',
-    watchRefChange: RefChange.WATCH_CHAPTER_CHANGE,
+    watchRefChange: RefChange.WATCH_VERSE_CHANGE,
   };
 
   const wiBiLexOptions: WebsiteViewerOptions = {
