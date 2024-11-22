@@ -1,3 +1,8 @@
-Extension template for Platform.Bible. Powered by webpack.
+Extension to render websites inside Platform.Bible
 
-This is a webpack project template pre-configured to build a Platform.Bible extension. It contains the bare minimum of what an extension needs.
+This includes
+
+- Showing how to add commands that spawn web pages inside of Platform
+- example web pages
+- reloading pages on scripture reference and scroll group changes, so that web pages stay up to date with the current scripture reference
+- retaining the web page on layout changes and restart of Platform
