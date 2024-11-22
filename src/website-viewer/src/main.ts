@@ -16,15 +16,15 @@ import { ScrollGroupUpdateInfo } from 'shared/services/scroll-group.service-mode
 import { CloseWebViewEvent, UpdateWebViewEvent } from 'shared/services/web-view.service-model';
 import { getWebViewTitle } from './utils';
 import {
-  getResourceOptions,
+  getWebsiteOptions,
   RefChange,
   SATISFY_TS_KEY,
   SATISFY_TS_OPTIONS,
-  WebViewerOptions,
-} from './webViewerOptions';
+  WebsiteViewerOptions,
+} from './websiteViewerOptions';
 
-interface BasicWebViewerOptions extends GetWebViewOptions {
-  openResourceCommand: keyof CommandHandlers;
+interface BasicWebsiteViewerOptions extends GetWebViewOptions {
+  openWebsiteCommand: keyof CommandHandlers;
 }
 
 interface ScrollGroupInfo {
@@ -32,7 +32,7 @@ interface ScrollGroupInfo {
   scrRef: ScriptureReference;
 }
 
-const WEB_VIEWER_WEBVIEW_TYPE = 'webViewer.webView';
+const WEBSITE_VIEWER_WEBVIEW_TYPE = 'websiteViewer.webView';
 const USER_DATA_KEY = 'webViewTypeById_';
 const SCR_REF_TO_TRIGGER_UPDATE = {
   bookNum: -1,
@@ -42,43 +42,43 @@ const SCR_REF_TO_TRIGGER_UPDATE = {
 let executionToken: ExecutionToken;
 let userLanguageCode: string;
 
-let resourceOptions: Map<keyof CommandHandlers, WebViewerOptions>;
+let websiteOptions: Map<keyof CommandHandlers, WebsiteViewerOptions>;
 const commandByWebViewId = new Map<string, keyof CommandHandlers>();
 const scrollGroupInfoByWebViewId = new Map<string, ScrollGroupInfo>();
 
 /** Function to open a Web Viewer. Registered as a command handler. */
-async function openWebViewerOfType({
-  openResourceCommand,
-}: BasicWebViewerOptions): Promise<string | undefined> {
+async function openWebsiteViewerOfType({
+  openWebsiteCommand,
+}: BasicWebsiteViewerOptions): Promise<string | undefined> {
   logger.info(`web-viewer: retrieved command to open a web viewer`);
   const webViewOptions = {
-    openResourceCommand,
+    openWebsiteCommand,
     // use existing id to open only 1 instance of a web view type.
     // reverse lookup of the webview id in the map. This should be undefined or a unique id.
     existingId: Array.from(commandByWebViewId.entries()).find(
-      ([, command]) => command === openResourceCommand,
+      ([, command]) => command === openWebsiteCommand,
     )?.[0],
   };
 
-  return papi.webViews.openWebView(WEB_VIEWER_WEBVIEW_TYPE, undefined, webViewOptions);
+  return papi.webViews.openWebView(WEBSITE_VIEWER_WEBVIEW_TYPE, undefined, webViewOptions);
 }
 
-function reOpenWebViewerFromExistingId(existingWebViewId: string) {
-  // get webView by existingId (without the possibility to pass WebViewer specific options)
-  return papi.webViews.openWebView(WEB_VIEWER_WEBVIEW_TYPE, undefined, {
+function reOpenWebsiteViewerFromExistingId(existingWebViewId: string) {
+  // get webView by existingId (without the possibility to pass WebsiteViewer specific options)
+  return papi.webViews.openWebView(WEBSITE_VIEWER_WEBVIEW_TYPE, undefined, {
     existingId: existingWebViewId,
   });
 }
 
 /** Simple web view provider that provides Web Viewer web views when papi requests them */
-const webViewerWebViewProvider: IWebViewProvider = {
+const websiteViewerWebViewProvider: IWebViewProvider = {
   async getWebView(
     savedWebView: SavedWebViewDefinition,
-    basicOptions: BasicWebViewerOptions,
+    basicOptions: BasicWebsiteViewerOptions,
   ): Promise<WebViewDefinition | undefined> {
-    if (savedWebView.webViewType !== WEB_VIEWER_WEBVIEW_TYPE) {
+    if (savedWebView.webViewType !== WEBSITE_VIEWER_WEBVIEW_TYPE) {
       throw new Error(
-        `${WEB_VIEWER_WEBVIEW_TYPE} provider received request to provide a ${savedWebView.webViewType} web view`,
+        `${WEBSITE_VIEWER_WEBVIEW_TYPE} provider received request to provide a ${savedWebView.webViewType} web view`,
       );
     }
 
@@ -93,14 +93,14 @@ const webViewerWebViewProvider: IWebViewProvider = {
     });
 
     const userDataKey = `${USER_DATA_KEY}${savedWebView.id}`;
-    if (basicOptions.openResourceCommand) {
+    if (basicOptions.openWebsiteCommand) {
       // store command by webview id to be able get options only based on the webview id
-      commandByWebViewId.set(savedWebView.id, basicOptions.openResourceCommand);
+      commandByWebViewId.set(savedWebView.id, basicOptions.openWebsiteCommand);
       // persist to user data to survive app restart
-      papi.storage.writeUserData(executionToken, userDataKey, basicOptions.openResourceCommand);
+      papi.storage.writeUserData(executionToken, userDataKey, basicOptions.openWebsiteCommand);
     }
     const command =
-      basicOptions.openResourceCommand ??
+      basicOptions.openWebsiteCommand ??
       commandByWebViewId.get(savedWebView.id) ?? // read from in-memory map when not called via a command
       (await papi.storage.readUserData(executionToken, userDataKey)); // read from persisted user data after app restart
     if (!commandByWebViewId.get(savedWebView.id)) {
@@ -108,13 +108,13 @@ const webViewerWebViewProvider: IWebViewProvider = {
       commandByWebViewId.set(savedWebView.id, command);
     }
 
-    const options: WebViewerOptions = resourceOptions.get(command) || SATISFY_TS_OPTIONS;
+    const options: WebsiteViewerOptions = websiteOptions.get(command) || SATISFY_TS_OPTIONS;
 
     const url = await options.getUrl(currentScriptureReference, userLanguageCode);
     logger.log(`web-viewer is opening url ${url}, options: ${JSON.stringify(options)}`);
 
     const titleFormatString = await papi.localization.getLocalizedString({
-      localizeKey: '%webViewer_title_format%',
+      localizeKey: '%websiteViewer_title_format%',
     });
 
     return {
@@ -123,7 +123,7 @@ const webViewerWebViewProvider: IWebViewProvider = {
       // work around for bad enum export in papi
       // eslint-disable-next-line no-type-assertion/no-type-assertion
       contentType: 'url' as WebViewContentType.URL,
-      title: getWebViewTitle(titleFormatString, options.webResourceName),
+      title: getWebViewTitle(titleFormatString, options.websiteName),
       allowScripts: true,
     };
   },
@@ -140,11 +140,11 @@ export async function getCurrentScriptureReference(
 }
 
 function registerCommandHandlers() {
-  resourceOptions = getResourceOptions();
+  websiteOptions = getWebsiteOptions();
 
-  return Array.from(resourceOptions.entries()).map(([command, options]) => {
+  return Array.from(websiteOptions.entries()).map(([command, options]) => {
     return papi.commands.registerCommand(command, () =>
-      openWebViewerOfType({ ...options, openResourceCommand: command }),
+      openWebsiteViewerOfType({ ...options, openWebsiteCommand: command }),
     );
   });
 }
@@ -154,7 +154,7 @@ function shouldUpdateOnScriptureRefChange(
   oldRef: ScriptureReference,
   newRef: ScriptureReference,
 ) {
-  const watchRefChange = resourceOptions.get(commandKey || SATISFY_TS_KEY)?.watchRefChange;
+  const watchRefChange = websiteOptions.get(commandKey || SATISFY_TS_KEY)?.watchRefChange;
 
   if (!watchRefChange) return false;
 
@@ -206,7 +206,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
 
   const commandPromises = registerCommandHandlers();
 
-  // When the scripture reference changes, re-render the last webview of type "webViewerWebViewType"
+  // When the scripture reference changes, re-render the last webview of type "websiteViewerWebViewType"
   // This is not fired in case of "no scroll group", this is handled inside the scroll group change code
   papi.scrollGroups.onDidUpdateScrRef((scrollGroupUpdateInfo: ScrollGroupUpdateInfo) => {
     logger.debug(
@@ -225,7 +225,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
         logger.debug(
           `web-viewer: Updating webview with id: ${webViewId}, command: ${commandByWebViewId.get(webViewId)}`,
         );
-        return reOpenWebViewerFromExistingId(webViewId);
+        return reOpenWebsiteViewerFromExistingId(webViewId);
       });
 
     return Promise.all(updateWebViewPromises);
@@ -237,7 +237,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     if (!commandByWebViewId.has(webViewId)) return;
 
     const command = commandByWebViewId.get(webViewId) || SATISFY_TS_KEY;
-    const options: WebViewerOptions = resourceOptions.get(command) || SATISFY_TS_OPTIONS;
+    const options: WebsiteViewerOptions = websiteOptions.get(command) || SATISFY_TS_OPTIONS;
 
     if (options.watchRefChange === RefChange.DO_NOT_WATCH) return;
 
@@ -259,7 +259,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
         `scrollGroupRef changed - old: ${JSON.stringify(scrollGroupInfoByWebViewId.get(updateWebViewEvent.webView.id))},
         new: ${JSON.stringify(updateWebViewEvent.webView.scrollGroupScrRef)}`,
       );
-      reOpenWebViewerFromExistingId(updateWebViewEvent.webView.id);
+      reOpenWebsiteViewerFromExistingId(updateWebViewEvent.webView.id);
     }
   });
 
@@ -271,13 +271,13 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     }
   });
 
-  const webViewerWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
-    WEB_VIEWER_WEBVIEW_TYPE,
-    webViewerWebViewProvider,
+  const websiteViewerWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
+    WEBSITE_VIEWER_WEBVIEW_TYPE,
+    websiteViewerWebViewProvider,
   );
 
   // Await the registration promises at the end so we don't hold everything else up
-  context.registrations.add(await webViewerWebViewProviderPromise);
+  context.registrations.add(await websiteViewerWebViewProviderPromise);
   Promise.all(commandPromises)
     .then((arr) => context.registrations.add(...arr))
     .catch((e) => logger.error('Error loading command promises', e));

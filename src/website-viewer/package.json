@@ -1,9 +1,9 @@
 {
-  "name": "web-viewer",
+  "name": "website-viewer",
   "private": true,
   "version": "0.0.1",
   "main": "src/main.js",
-  "types": "src/types/web-viewer.d.ts",
+  "types": "src/types/website-viewer.d.ts",
   "author": "Paranext",
   "license": "MIT",
   "scripts": {

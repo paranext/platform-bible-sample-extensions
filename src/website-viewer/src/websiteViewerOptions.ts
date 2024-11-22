@@ -3,17 +3,17 @@ import { VerseRef } from '@sillsdev/scripture';
 import { CommandHandlers } from 'papi-shared-types';
 import { formatScrRef, ScriptureReference } from 'platform-bible-utils';
 
-export interface WebViewerOptions {
+export interface WebsiteViewerOptions {
   getUrl: (scrRef: ScriptureReference, langCode: string) => string;
-  webResourceName: string;
+  websiteName: string;
   watchRefChange?: RefChange;
 }
 
 // satisfy typescript, although we do not expect these to appear
 export const SATISFY_TS_KEY: keyof CommandHandlers = 'dummy.dummy';
-export const SATISFY_TS_OPTIONS: WebViewerOptions = {
+export const SATISFY_TS_OPTIONS: WebsiteViewerOptions = {
   getUrl: () => '',
-  webResourceName: '',
+  websiteName: '',
 };
 
 export enum RefChange {
@@ -25,7 +25,7 @@ export enum RefChange {
 
 function range(start: number, end: number) {
   if (start > end)
-    logger.warn(`web-viewer: range(${start}, ${end}) is invalid. End must be after the start.`);
+    logger.warn(`website-viewer: range(${start}, ${end}) is invalid. End must be after the start.`);
   return [...Array(end + 1).keys()].filter((i) => i >= start);
 }
 
@@ -36,31 +36,31 @@ function englishBookNameOtn(scrRef: ScriptureReference) {
   return formatScrRef(scrRef, 'English').replace(/^((\d)\s)?(\w+).*$/, '$3$1'); // e.g. Corinthians1
 }
 
-export function getResourceOptions(): Map<keyof CommandHandlers, WebViewerOptions> {
-  const sandboxWebViewerOptions: WebViewerOptions = {
+export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOptions> {
+  const sandboxWebsiteViewerOptions: WebsiteViewerOptions = {
     getUrl: () => 'https://sykc6v-3000.csb.app/',
-    webResourceName: 'CodeSandbox Settings UI mockup',
+    websiteName: 'CodeSandbox Settings UI mockup',
   };
 
-  const pt9VideoOptions: WebViewerOptions = {
+  const pt9VideoOptions: WebsiteViewerOptions = {
     getUrl: () =>
       'https://player.vimeo.com/video/472226946?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479',
 
-    webResourceName: 'PT9 Video',
+    websiteName: 'PT9 Video',
   };
 
-  const pt9VHelpOptions: WebViewerOptions = {
+  const pt9VHelpOptions: WebsiteViewerOptions = {
     getUrl: () => 'https://paratext.org/videos/en/paratext-9/',
-    webResourceName: 'PT9 Help',
+    websiteName: 'PT9 Help',
   };
 
-  const usfmDocsOptions: WebViewerOptions = {
+  const usfmDocsOptions: WebsiteViewerOptions = {
     getUrl: () => 'https://docs.usfm.bible/usfm/3.1/index.html',
-    webResourceName: 'Usfm Docs',
+    websiteName: 'Usfm Docs',
   };
 
   const availableOtnBooks = [6, 8, 17, 20, 27, 28, 33, 39, ...range(40, 46), ...range(48, 66)]; // with added books this may be outdated soon
-  const otnOptions: WebViewerOptions = {
+  const otnOptions: WebsiteViewerOptions = {
     getUrl: (scrRef: ScriptureReference) => {
       const otNtUrlParam = scrRef.bookNum < 40 ? 'The_Old_Testament' : 'The_New_Testament';
       const verseRef = new VerseRef(scrRef.bookNum, scrRef.chapterNum, scrRef.verseNum, undefined);
@@ -79,15 +79,15 @@ export function getResourceOptions(): Map<keyof CommandHandlers, WebViewerOption
         return `https://opentn.bible/search/?testament=${otNtUrlParam}&book=${bookName.toLowerCase()}`;
 
       logger.warn(
-        `web-viewer: OTN: ${verseRef.book} not available in OTN, routing to the main page`,
+        `website-viewer: OTN: ${verseRef.book} not available in OTN, routing to the main page`,
       );
       return 'https://opentn.bible/';
     },
-    webResourceName: 'SIL OTN',
+    websiteName: 'SIL OTN',
     watchRefChange: RefChange.WATCH_BOOK_CHANGE,
   };
 
-  const marbleOptions: WebViewerOptions = {
+  const marbleOptions: WebsiteViewerOptions = {
     getUrl: (scrRef: ScriptureReference) => {
       let bookName = englishBookNameMarble(scrRef);
       const otherBookNames: Record<number, string> = {
@@ -113,22 +113,22 @@ export function getResourceOptions(): Map<keyof CommandHandlers, WebViewerOption
       bookName = otherBookNames[scrRef.bookNum] ?? bookName;
       return `https://marble.bible/text?book=${bookName}&chapter=${scrRef.chapterNum}&verse=${scrRef.verseNum}`;
     },
-    webResourceName: 'UBS Marble',
+    websiteName: 'UBS Marble',
     watchRefChange: RefChange.WATCH_CHAPTER_CHANGE,
   };
 
-  const wiBiLexOptions: WebViewerOptions = {
+  const wiBiLexOptions: WebsiteViewerOptions = {
     getUrl: () => 'https://www.die-bibel.de/ressourcen/wibilex',
-    webResourceName: 'GBS WiBiLex',
+    websiteName: 'GBS WiBiLex',
   };
 
-  return new Map<keyof CommandHandlers, WebViewerOptions>([
-    ['webViewer.openCodeSandbox', sandboxWebViewerOptions],
-    ['webViewer.openPT9Video', pt9VideoOptions],
-    ['webViewer.openPT9Help', pt9VHelpOptions],
-    ['webViewer.openUsfmDocs', usfmDocsOptions],
-    ['webViewer.openOTN', otnOptions],
-    ['webViewer.openMarble', marbleOptions],
-    ['webViewer.openWiBiLex', wiBiLexOptions],
+  return new Map<keyof CommandHandlers, WebsiteViewerOptions>([
+    ['websiteViewer.openCodeSandbox', sandboxWebsiteViewerOptions],
+    ['websiteViewer.openPT9Video', pt9VideoOptions],
+    ['websiteViewer.openPT9Help', pt9VHelpOptions],
+    ['websiteViewer.openUsfmDocs', usfmDocsOptions],
+    ['websiteViewer.openOTN', otnOptions],
+    ['websiteViewer.openMarble', marbleOptions],
+    ['websiteViewer.openWiBiLex', wiBiLexOptions],
   ]);
 }
