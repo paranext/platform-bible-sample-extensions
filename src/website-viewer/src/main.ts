@@ -68,7 +68,7 @@ async function openWebsiteViewerByType({
   return papi.webViews.openWebView(WEBSITE_VIEWER_WEBVIEW_TYPE, undefined, webViewOptions);
 }
 
-/** Function to reopen a Web Viewer of the stored type by web view id */
+/** Function to reopen a Website Viewer of the stored type by web view id */
 function reopenWebsiteViewerByExistingId(existingWebViewId: string) {
   // get webView by existingId (without the possibility to pass WebsiteViewer specific options)
   return papi.webViews.openWebView(WEBSITE_VIEWER_WEBVIEW_TYPE, undefined, {
