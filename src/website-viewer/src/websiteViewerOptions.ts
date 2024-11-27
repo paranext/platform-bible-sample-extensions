@@ -4,7 +4,7 @@ import { CommandHandlers } from 'papi-shared-types';
 import { formatScrRef, ScriptureReference } from 'platform-bible-utils';
 
 export interface WebsiteViewerOptions {
-  getUrl: (scrRef: ScriptureReference, langCode: string) => string;
+  getUrl: (scrRef: ScriptureReference, interfaceLanguage: string[]) => string;
   // TODO: could be improved by passing in another parameter with the selected text of the active tab
   // (e.g. for a lexicon or Marble to scroll to / highlight a word)
   // for demo purpose this text could for now come from a setting, where users can copy it into
@@ -14,29 +14,35 @@ export interface WebsiteViewerOptions {
 }
 
 // satisfy typescript, although we do not expect these to appear
-export const SATISFY_TS_KEY: keyof CommandHandlers = 'dummy.dummy';
-export const SATISFY_TS_OPTIONS: WebsiteViewerOptions = {
+export const DEFAULT_WEBSITE_VIEWER_OPTIONS: WebsiteViewerOptions = {
   getUrl: () => '',
   websiteName: '',
 };
 
 export enum RefChange {
-  DO_NOT_WATCH,
-  WATCH_BOOK_CHANGE,
-  WATCH_CHAPTER_CHANGE,
-  WATCH_VERSE_CHANGE,
+  DoNotWatch,
+  WatchBookChange,
+  WatchChapterChange,
+  WatchVerseChange,
 }
 
-function range(start: number, end: number) {
+/**
+ * Creates a list of integers starting from the _start_ number up to the _end_ number
+ *
+ * @param start The first number
+ * @param end The last number
+ * @returns An array of numbers
+ */
+function createRange(start: number, end: number) {
   if (start > end)
     logger.warn(`website-viewer: range(${start}, ${end}) is invalid. End must be after the start.`);
   return [...Array(end + 1).keys()].filter((i) => i >= start);
 }
 
-function englishBookNameMarble(scrRef: ScriptureReference) {
+function getEnglishBookNameUrlParamForMarble(scrRef: ScriptureReference) {
   return formatScrRef(scrRef, 'English').replace(/^((\d\s)?\w+).*$/, '$1'); // e.g. 1 Corinthians
 }
-function englishBookNameOtn(scrRef: ScriptureReference) {
+function getEnglishBookNameUrlParamForOtn(scrRef: ScriptureReference) {
   return formatScrRef(scrRef, 'English').replace(/^((\d)\s)?(\w+).*$/, '$3$1'); // e.g. Corinthians1
 }
 
@@ -63,14 +69,25 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
     websiteName: 'Usfm Docs',
   };
 
-  const availableOtnBooks = [6, 8, 17, 20, 27, 28, 33, 39, ...range(40, 46), ...range(48, 66)]; // with added books this may be outdated soon
   const otnOptions: WebsiteViewerOptions = {
     getUrl: (scrRef: ScriptureReference) => {
       const otNtUrlParam = scrRef.bookNum < 40 ? 'The_Old_Testament' : 'The_New_Testament';
       const verseRef = new VerseRef(scrRef.bookNum, scrRef.chapterNum, scrRef.verseNum, undefined);
-      const hasEnglishBookName = [40, ...range(42, 53), 56, 45, ...range(59, 61), 65];
+      const availableOtnBooks = [
+        6,
+        8,
+        17,
+        20,
+        27,
+        28,
+        33,
+        39,
+        ...createRange(40, 46),
+        ...createRange(48, 66),
+      ]; // with added books this may be outdated soon
+      const hasEnglishBookName = [40, ...createRange(42, 53), 56, 45, ...createRange(59, 61), 65];
       let bookName = hasEnglishBookName.includes(scrRef.bookNum)
-        ? englishBookNameOtn(scrRef)
+        ? getEnglishBookNameUrlParamForOtn(scrRef)
         : verseRef.book;
       if (verseRef.book === 'EST') bookName = 'eth'; // different key for Esther
       if (verseRef.book === '1TI') bookName = 'tim1';
@@ -79,21 +96,22 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
       if (verseRef.book === '1JN') bookName = 'jn1';
       if (verseRef.book === '2JN') bookName = 'jn2';
       if (verseRef.book === '3JN') bookName = 'jn3';
+
       if (availableOtnBooks.includes(scrRef.bookNum))
         return `https://opentn.bible/search/?testament=${otNtUrlParam}&book=${bookName.toLowerCase()}`;
 
       logger.warn(
-        `website-viewer: OTN: ${verseRef.book} not available in OTN, routing to the main page`,
+        `website-viewer: OTN: ${verseRef.book} not available on the open translator notes website, routing to the main page`,
       );
       return 'https://opentn.bible/';
     },
     websiteName: 'SIL OTN',
-    watchRefChange: RefChange.WATCH_BOOK_CHANGE,
+    watchRefChange: RefChange.WatchBookChange,
   };
 
   const marbleOptions: WebsiteViewerOptions = {
     getUrl: (scrRef: ScriptureReference) => {
-      let bookName = englishBookNameMarble(scrRef);
+      let bookName = getEnglishBookNameUrlParamForMarble(scrRef);
       const otherBookNames: Record<number, string> = {
         22: 'Song of Solomon',
         40: 'Matt',
@@ -118,7 +136,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
       return `https://marble.bible/text?book=${bookName}&chapter=${scrRef.chapterNum}&verse=${scrRef.verseNum}`;
     },
     websiteName: 'UBS Marble',
-    watchRefChange: RefChange.WATCH_VERSE_CHANGE,
+    watchRefChange: RefChange.WatchVerseChange,
   };
 
   const wiBiLexOptions: WebsiteViewerOptions = {
@@ -132,7 +150,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
       return `https://www.bible.com/en-GB/bible/1/${verseRef.book}.${scrRef.chapterNum}.${scrRef.verseNum}`;
     },
     websiteName: 'YouVersion',
-    watchRefChange: RefChange.WATCH_VERSE_CHANGE,
+    watchRefChange: RefChange.WatchVerseChange,
   };
 
   return new Map<keyof CommandHandlers, WebsiteViewerOptions>([
