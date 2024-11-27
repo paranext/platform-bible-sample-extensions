@@ -70,6 +70,19 @@ declare module 'papi-shared-types' {
     'websiteViewer.openYouVersionVerse': () => Promise<string | undefined>;
 
     /**
+     * Opens a new webview with a link to the url with which Platform opened the website. Clicking
+     * that link will open the url in the default browser of the OS
+     *
+     * Note: this command is intended to work from the web view menu
+     *
+     * @param webViewId The web view id of the current web view to look up the type and get the url,
+     *   provided by the web view menu
+     * @returns From return value of openWebView: Promise that resolves to the id of the link web
+     *   view or undefined if the provider did not create a link web view
+     */
+    'websiteViewer.showUrl': (webViewId: string) => Promise<string | undefined>;
+
+    /**
      * Dummy to use in strictly typed Maps
      *
      * @returns

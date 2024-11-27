@@ -22,6 +22,7 @@ import {
   SATISFY_TS_OPTIONS,
   WebsiteViewerOptions,
 } from './websiteViewerOptions';
+import linkWebView from './link.web-view?inline';
 
 interface BasicWebsiteViewerOptions extends GetWebViewOptions {
   openWebsiteCommand: keyof CommandHandlers;
@@ -32,7 +33,12 @@ interface ScrollGroupInfo {
   scrRef: ScriptureReference;
 }
 
-const WEBSITE_VIEWER_WEBVIEW_TYPE = 'websiteViewer.webView';
+interface LinkWebViewOptions extends GetWebViewOptions {
+  url: string;
+}
+
+const WEBSITE_VIEWER_WEBVIEW_TYPE = 'website-viewer.webView';
+const LINK_WEB_VIEW_TYPE = 'website-viewer.link.webView';
 const USER_DATA_KEY = 'webViewTypeById_';
 const SCR_REF_TO_TRIGGER_UPDATE = {
   bookNum: -1,
@@ -111,7 +117,7 @@ const websiteViewerWebViewProvider: IWebViewProvider = {
 
     const options: WebsiteViewerOptions = websiteOptions.get(command) || SATISFY_TS_OPTIONS;
 
-    const url = await options.getUrl(currentScriptureReference, userLanguageCode);
+    const url = options.getUrl(currentScriptureReference, userLanguageCode);
     logger.log(`website-viewer is opening url ${url}, options: ${JSON.stringify(options)}`);
 
     const titleFormatString = await papi.localization.getLocalizedString({
@@ -130,7 +136,7 @@ const websiteViewerWebViewProvider: IWebViewProvider = {
   },
 };
 
-export async function getCurrentScriptureReference(
+async function getCurrentScriptureReference(
   scrollGroupRef: ScrollGroupScrRef | undefined,
 ): Promise<ScriptureReference> {
   if (scrollGroupRef === undefined) return papi.scrollGroups.getScrRef();
@@ -140,7 +146,28 @@ export async function getCurrentScriptureReference(
   return Promise.resolve(scrollGroupRef);
 }
 
-function registerCommandHandlers() {
+/** Simple web view provider that provides link web views when papi requests them */
+const linkWebViewProvider: IWebViewProvider = {
+  async getWebView(
+    savedWebView: SavedWebViewDefinition,
+    getWebViewOptions: LinkWebViewOptions,
+  ): Promise<WebViewDefinition | undefined> {
+    if (savedWebView.webViewType !== LINK_WEB_VIEW_TYPE)
+      throw new Error(
+        `${LINK_WEB_VIEW_TYPE} provider received request to provide a ${savedWebView.webViewType} web view`,
+      );
+
+    return {
+      ...savedWebView,
+      content: linkWebView,
+      // work around to pass in the url, because the title can be accessed from within the web view
+      title: getWebViewOptions.url,
+      allowPopups: true,
+    };
+  },
+};
+
+function registerOpenWebsiteCommandHandlers() {
   websiteOptions = getWebsiteOptions();
 
   return Array.from(websiteOptions.entries()).map(([command, options]) => {
@@ -199,13 +226,24 @@ async function getUserLanguageCode(): Promise<string> {
   return 'NOT_YET_IMPLEMENTED';
 }
 
+function getUrlForWebView(webViewId: string): string {
+  const command = commandByWebViewId.get(webViewId) || SATISFY_TS_KEY;
+  const options: WebsiteViewerOptions = websiteOptions.get(command) || SATISFY_TS_OPTIONS;
+  const currentScrollGroupInfo = scrollGroupInfoByWebViewId.get(webViewId);
+  const currentScriptureReference = currentScrollGroupInfo
+    ? currentScrollGroupInfo.scrRef
+    : SCR_REF_TO_TRIGGER_UPDATE; // this should not happen
+  if (!currentScrollGroupInfo) {
+    logger.warn('website-viewer: scroll group could not be found, copied url might be unexpected');
+  }
+  return options.getUrl(currentScriptureReference, userLanguageCode);
+}
+
 export async function activate(context: ExecutionActivationContext): Promise<void> {
   logger.info('website-viewer is activating!');
 
   executionToken = context.executionToken;
   userLanguageCode = await getUserLanguageCode();
-
-  const commandPromises = registerCommandHandlers();
 
   // When the scripture reference changes, re-render the last webview of type "websiteViewerWebViewType"
   // This is not fired in case of "no scroll group", this is handled inside the scroll group change code
@@ -266,11 +304,31 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
 
   // clean up webviews from the map, so that no unexpected empty tabs appear on changing ref after closing tabs
   papi.webViews.onDidCloseWebView((closeWebViewEvent: CloseWebViewEvent) => {
-    if (commandByWebViewId.has(closeWebViewEvent.webView.id)) {
-      commandByWebViewId.delete(closeWebViewEvent.webView.id);
-      scrollGroupInfoByWebViewId.delete(closeWebViewEvent.webView.id);
+    const webViewId = closeWebViewEvent.webView.id;
+    if (commandByWebViewId.has(webViewId)) {
+      commandByWebViewId.delete(webViewId);
+      scrollGroupInfoByWebViewId.delete(webViewId);
+
+      const userDataKey = `${USER_DATA_KEY}${webViewId}`;
+      papi.storage.deleteUserData(executionToken, userDataKey);
     }
   });
+
+  const openUrlWebViewPromise = papi.commands.registerCommand(
+    'websiteViewer.showUrl',
+    async (webViewId) => {
+      const url = getUrlForWebView(webViewId);
+      const options: LinkWebViewOptions = { url, existingId: '?' }; // only open 1 instance at a time
+      return papi.webViews.openWebView(LINK_WEB_VIEW_TYPE, undefined, options);
+    },
+  );
+
+  const linkWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
+    LINK_WEB_VIEW_TYPE,
+    linkWebViewProvider,
+  );
+
+  const commandPromises = registerOpenWebsiteCommandHandlers();
 
   const websiteViewerWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
     WEBSITE_VIEWER_WEBVIEW_TYPE,
@@ -278,7 +336,11 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
   );
 
   // Await the registration promises at the end so we don't hold everything else up
-  context.registrations.add(await websiteViewerWebViewProviderPromise);
+  context.registrations.add(
+    await websiteViewerWebViewProviderPromise,
+    await openUrlWebViewPromise,
+    await linkWebViewProviderPromise,
+  );
   Promise.all(commandPromises)
     .then((arr) => context.registrations.add(...arr))
     .catch((e) => logger.error('Error loading command promises', e));

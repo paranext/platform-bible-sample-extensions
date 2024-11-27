@@ -5,6 +5,10 @@ import { formatScrRef, ScriptureReference } from 'platform-bible-utils';
 
 export interface WebsiteViewerOptions {
   getUrl: (scrRef: ScriptureReference, langCode: string) => string;
+  // TODO: could be improved by passing in another parameter with the selected text of the active tab
+  // (e.g. for a lexicon or Marble to scroll to / highlight a word)
+  // for demo purpose this text could for now come from a setting, where users can copy it into
+  // alternatively an input on the main toolbar - if extensions can do a thing like adding controls to the main toolbar
   websiteName: string;
   watchRefChange?: RefChange;
 }
@@ -14,10 +18,6 @@ export const SATISFY_TS_KEY: keyof CommandHandlers = 'dummy.dummy';
 export const SATISFY_TS_OPTIONS: WebsiteViewerOptions = {
   getUrl: () => '',
   websiteName: '',
-  // TODO: could be improved by passing in the selected tab of the active tab
-  // (e.g. for a lexicon or Marble to scroll to / highlight a word)
-  // for demo purpose this text could for now come from a setting, where users can copy it into
-  // alternatively an input on the main toolbar - if extensions can do a thing like adding controls to the main toolbar
 };
 
 export enum RefChange {
@@ -126,7 +126,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
     websiteName: 'GBS WiBiLex',
   };
 
-  const youVersionVerseViewOtions: WebsiteViewerOptions = {
+  const youVersionVerseViewOptions: WebsiteViewerOptions = {
     getUrl: (scrRef: ScriptureReference) => {
       const verseRef = new VerseRef(scrRef.bookNum, scrRef.chapterNum, scrRef.verseNum, undefined);
       return `https://www.bible.com/en-GB/bible/1/${verseRef.book}.${scrRef.chapterNum}.${scrRef.verseNum}`;
@@ -143,6 +143,6 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
     ['websiteViewer.openOTN', otnOptions],
     ['websiteViewer.openMarble', marbleOptions],
     ['websiteViewer.openWiBiLex', wiBiLexOptions],
-    ['websiteViewer.openYouVersionVerse', youVersionVerseViewOtions],
+    ['websiteViewer.openYouVersionVerse', youVersionVerseViewOptions],
   ]);
 }

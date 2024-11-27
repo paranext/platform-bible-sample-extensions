@@ -74,5 +74,33 @@
     "groups": {},
     "items": []
   },
-  "webViewMenus": {}
+  "webViewMenus": {
+    "website-viewer.webView": {
+      "topMenu": {
+        "columns": {
+          "website-viewer.website": {
+            "label": "%websiteViewerMenu_website%",
+            "order": 4711,
+            "isExtensible": true
+          }
+        },
+        "groups": {
+          "website-viewer.website": { "column": "website-viewer.website", "order": 3 }
+        },
+        "items": [
+          {
+            "label": "%websiteViewerMenu_showUrl%",
+            "tooltip": "%websiteViewerMenu_showUrl_tooltip%",
+            "group": "website-viewer.website",
+            "order": 1,
+            "command": "websiteViewer.showUrl"
+          }
+        ]
+      },
+      "contextMenu": {
+        "groups": {},
+        "items": []
+      }
+    }
+  }
 }
