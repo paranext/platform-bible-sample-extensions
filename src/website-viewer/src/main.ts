@@ -324,6 +324,16 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     },
   );
 
+  const linkWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
+    LINK_WEB_VIEW_TYPE,
+    linkWebViewProvider,
+  );
+
+  const websiteViewerWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
+    WEBSITE_VIEWER_WEBVIEW_TYPE,
+    websiteViewerWebViewProvider,
+  );
+
   const openUrlWebViewPromise = papi.commands.registerCommand(
     'websiteViewer.showUrl',
     async (webViewId) => {
@@ -333,30 +343,18 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     },
   );
 
-  const linkWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
-    LINK_WEB_VIEW_TYPE,
-    linkWebViewProvider,
-  );
-
   const commandPromises = registerOpenWebsiteCommandHandlers();
-
-  const websiteViewerWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
-    WEBSITE_VIEWER_WEBVIEW_TYPE,
-    websiteViewerWebViewProvider,
-  );
 
   // Await the registration promises at the end so we don't hold everything else up
   context.registrations.add(
-    await websiteViewerWebViewProviderPromise,
-    await openUrlWebViewPromise,
-    await linkWebViewProviderPromise,
     scrollGroupUpdateUnsubscriber,
     webViewUpdateUnsubscriber,
     webViewCloseUnsubscriber,
+    await linkWebViewProviderPromise,
+    await websiteViewerWebViewProviderPromise,
+    await openUrlWebViewPromise,
+    ...(await Promise.all(commandPromises)),
   );
-  commandPromises.forEach(async (commandPromise) => {
-    context.registrations.add(await commandPromise);
-  });
 
   logger.info('website-viewer is finished activating!');
 }
