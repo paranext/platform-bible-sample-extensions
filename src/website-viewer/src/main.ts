@@ -162,9 +162,9 @@ const linkWebViewProvider: IWebViewProvider = {
     return {
       ...savedWebView,
       content: linkWebView,
-      // work around to pass in the url, because the title can be accessed from within the web view
-      title: getWebViewOptions.url,
+      title: '%websiteViewerMenu_showUrl%',
       allowPopups: true,
+      state: { url: getWebViewOptions.url },
     };
   },
 };
