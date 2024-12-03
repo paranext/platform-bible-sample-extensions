@@ -62,6 +62,12 @@
         "group": "website-viewer.openGroup",
         "order": 3,
         "command": "websiteViewer.openYouVersionVerse"
+      },
+      {
+        "label": "%websiteViewerMenu_openStepBible%",
+        "group": "website-viewer.openGroup",
+        "order": 4,
+        "command": "websiteViewer.openStepBible"
       }
     ]
   },

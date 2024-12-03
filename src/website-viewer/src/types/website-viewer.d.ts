@@ -74,6 +74,15 @@ declare module 'papi-shared-types' {
     'websiteViewer.openYouVersionVerse': () => Promise<string | undefined>;
 
     /**
+     * Opens or updates a Website Viewer web view with the STEP Bible website and returns the web
+     * view id
+     *
+     * @returns From return value of openWebView: Promise that resolves to the ID of the web view we
+     *   got or undefined if the provider did not create a WebView for this request
+     */
+    'websiteViewer.openStepBible': () => Promise<string | undefined>;
+
+    /**
      * Opens or updates a web view showing a link to the url that the Website Viewer tab was opened
      * with. Clicking that link will open the url in the default browser of the OS.
      *

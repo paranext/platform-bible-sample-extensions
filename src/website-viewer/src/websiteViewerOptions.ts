@@ -26,6 +26,10 @@ export enum RefChange {
   WatchVerseChange,
 }
 
+function getFirstTwoLetterLanguageCode(interfaceLanguage: string[]): string {
+  return interfaceLanguage.filter((language: string) => language.length === 2)?.[0];
+}
+
 /**
  * Creates a list of integers starting from the _start_ number up to the _end_ number
  *
@@ -153,6 +157,94 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
     watchRefChange: RefChange.WatchVerseChange,
   };
 
+  const stepBibleOptions: WebsiteViewerOptions = {
+    getUrl: (scrRef: ScriptureReference, interfaceLanguage: string[]) => {
+      const books = [
+        'Gen',
+        'Exod',
+        'Lev',
+        'Num',
+        'Deut',
+        'Josh',
+        'Judg',
+        'Ruth',
+        '1Sam',
+        '2Sam',
+        '1Kngs',
+        '2Kngs',
+        '1Chr',
+        '2Chr',
+        'Ezra',
+        'Neh',
+        'Esth',
+        'Job',
+        'Psalm',
+        'Prov',
+        'Eccl',
+        'Song',
+        'Isa',
+        'Jer',
+        'Lam',
+        'Ezek',
+        'Dan',
+        'Hosea',
+        'Joel',
+        'Amos',
+        'Obad',
+        'Jonah',
+        'Micah',
+        'Nahum',
+        'Hab',
+        'Zeph',
+        'Hag',
+        'Zech',
+        'Mal',
+        'Matt',
+        'Mark',
+        'Luke',
+        'John',
+        'Acts',
+        'Rom',
+        '1Cor',
+        '2Cor',
+        'Gal',
+        'Eph',
+        'Phil',
+        'Col',
+        '1Thess',
+        '2Thess',
+        '1Tim',
+        '2Tim',
+        'Titus',
+        'Phlm',
+        'Heb',
+        'James',
+        '1Pet',
+        '2Pet',
+        '1John',
+        '2John',
+        '3John',
+        'Jude',
+        'Rev',
+      ];
+      const languageCode = getFirstTwoLetterLanguageCode(interfaceLanguage);
+      const locale = languageCode ? `&lang=${languageCode[0]}` : '';
+      let reference = `${books[scrRef.bookNum - 1]}.${scrRef.chapterNum}`;
+      // books with only 1 chapter do not use the chapter number and would interpret it as the verse number
+      if (
+        books[scrRef.bookNum - 1] === 'Obad' ||
+        books[scrRef.bookNum - 1] === 'Phlm' ||
+        books[scrRef.bookNum - 1] === '2John' ||
+        books[scrRef.bookNum - 1] === '3John' ||
+        books[scrRef.bookNum - 1] === 'Jude'
+      )
+        reference = books[scrRef.bookNum - 1];
+      return `https://www.stepbible.org/?q=reference=${reference}${locale}`;
+    },
+    websiteName: 'STEP Bible',
+    watchRefChange: RefChange.WatchChapterChange,
+  };
+
   return new Map<keyof CommandHandlers, WebsiteViewerOptions>([
     ['websiteViewer.openCodeSandbox', sandboxWebsiteViewerOptions],
     ['websiteViewer.openPT9Video', pt9VideoOptions],
@@ -162,5 +254,6 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
     ['websiteViewer.openMarble', marbleOptions],
     ['websiteViewer.openWiBiLex', wiBiLexOptions],
     ['websiteViewer.openYouVersionVerse', youVersionVerseViewOptions],
+    ['websiteViewer.openStepBible', stepBibleOptions],
   ]);
 }

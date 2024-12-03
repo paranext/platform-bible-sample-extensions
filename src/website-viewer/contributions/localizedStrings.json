@@ -12,6 +12,7 @@
       "%websiteViewerMenu_openMarbleWebsiteViewer%": "Marble (UBS)",
       "%websiteViewerMenu_openWiBiLexWebsiteViewer%": "WiBiLex (German Bible Society)",
       "%websiteViewerMenu_openYouVersionVerseView%": "YouVersion verse view",
+      "%websiteViewerMenu_openStepBible%": "STEP Bible",
       "%websiteViewerMenu_website%": "Website",
       "%websiteViewerMenu_showUrl%": "Show website url",
       "%websiteViewerMenu_showUrl_tooltip%": "Show the url that was used to load this tab. It might not be the current url in case you navigated inside the website.",
