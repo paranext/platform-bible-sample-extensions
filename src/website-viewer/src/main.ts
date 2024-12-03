@@ -10,10 +10,8 @@ import {
   WebViewDefinition,
 } from '@papi/core';
 
-import { CommandHandlers } from 'papi-shared-types';
+import type { CommandHandlers } from 'papi-shared-types';
 import { compareScrRefs, ScriptureReference } from 'platform-bible-utils';
-import { ScrollGroupUpdateInfo } from 'shared/services/scroll-group.service-model';
-import { CloseWebViewEvent, UpdateWebViewEvent } from 'shared/services/web-view.service-model';
 import linkWebView from './link.web-view?inline';
 import { getWebViewTitle } from './utils';
 import {
@@ -251,7 +249,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
   // When the scripture reference changes, re-render the last web view of type "websiteViewerWebViewType"
   // This is not fired in case of "no scroll group", this is handled inside the scroll group change code
   const scrollGroupUpdateUnsubscriber = papi.scrollGroups.onDidUpdateScrRef(
-    (scrollGroupUpdateInfo: ScrollGroupUpdateInfo) => {
+    (scrollGroupUpdateInfo) => {
       logger.debug(
         `website-viewer: ScriptureRef changed for scrollGroup ${scrollGroupUpdateInfo.scrollGroupId}: ${commandByWebViewId.size} Website Viewer web views in memory`,
       );
@@ -276,53 +274,49 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
   );
 
   // listen to scroll group changes for Website Viewer web views
-  const webViewUpdateUnsubscriber = papi.webViews.onDidUpdateWebView(
-    (updateWebViewEvent: UpdateWebViewEvent) => {
-      const webViewId = updateWebViewEvent.webView.id;
-      if (!commandByWebViewId.has(webViewId)) return;
+  const webViewUpdateUnsubscriber = papi.webViews.onDidUpdateWebView((updateWebViewEvent) => {
+    const webViewId = updateWebViewEvent.webView.id;
+    if (!commandByWebViewId.has(webViewId)) return;
 
-      const command = commandByWebViewId.get(webViewId);
-      if (!command) return; // this should not happen
-      const options: WebsiteViewerOptions = websiteOptions.get(command) || DEFAULT_OPTIONS;
+    const command = commandByWebViewId.get(webViewId);
+    if (!command) return; // this should not happen
+    const options: WebsiteViewerOptions = websiteOptions.get(command) || DEFAULT_OPTIONS;
 
-      if (options.watchRefChange === RefChange.DoNotWatch) return;
+    if (options.watchRefChange === RefChange.DoNotWatch) return;
 
-      const oldScrollGroupInfo = scrollGroupInfoByWebViewId.get(webViewId);
-      const newScrollRef = updateWebViewEvent.webView.scrollGroupScrRef;
-      const refChanged = hasScrollGroupChanged(oldScrollGroupInfo?.scrollGroupScrRef, newScrollRef);
-      const shouldUpdate =
-        !isScrRef(newScrollRef) ||
-        // check granular updates for "no scroll group"
-        shouldUpdateOnScriptureRefChange(
-          command,
-          oldScrollGroupInfo?.scrRef || SCR_REF_TO_TRIGGER_UPDATE,
-          newScrollRef,
-        );
+    const oldScrollGroupInfo = scrollGroupInfoByWebViewId.get(webViewId);
+    const newScrollRef = updateWebViewEvent.webView.scrollGroupScrRef;
+    const refChanged = hasScrollGroupChanged(oldScrollGroupInfo?.scrollGroupScrRef, newScrollRef);
+    const shouldUpdate =
+      !isScrRef(newScrollRef) ||
+      // check granular updates for "no scroll group"
+      shouldUpdateOnScriptureRefChange(
+        command,
+        oldScrollGroupInfo?.scrRef || SCR_REF_TO_TRIGGER_UPDATE,
+        newScrollRef,
+      );
 
-      if (refChanged && shouldUpdate) {
-        // rerender to get new ref from the changed scroll group
-        logger.debug(
-          `scrollGroupRef changed - old: ${JSON.stringify(scrollGroupInfoByWebViewId.get(updateWebViewEvent.webView.id))},
+    if (refChanged && shouldUpdate) {
+      // rerender to get new ref from the changed scroll group
+      logger.debug(
+        `scrollGroupRef changed - old: ${JSON.stringify(scrollGroupInfoByWebViewId.get(updateWebViewEvent.webView.id))},
         new: ${JSON.stringify(updateWebViewEvent.webView.scrollGroupScrRef)}`,
-        );
-        reopenWebsiteViewerByExistingId(updateWebViewEvent.webView.id);
-      }
-    },
-  );
+      );
+      reopenWebsiteViewerByExistingId(updateWebViewEvent.webView.id);
+    }
+  });
 
   // clean up webviews from the map, so that no unexpected empty tabs appear on changing ref after closing tabs
-  const webViewCloseUnsubscriber = papi.webViews.onDidCloseWebView(
-    (closeWebViewEvent: CloseWebViewEvent) => {
-      const webViewId = closeWebViewEvent.webView.id;
-      if (commandByWebViewId.has(webViewId)) {
-        commandByWebViewId.delete(webViewId);
-        scrollGroupInfoByWebViewId.delete(webViewId);
+  const webViewCloseUnsubscriber = papi.webViews.onDidCloseWebView((closeWebViewEvent) => {
+    const webViewId = closeWebViewEvent.webView.id;
+    if (commandByWebViewId.has(webViewId)) {
+      commandByWebViewId.delete(webViewId);
+      scrollGroupInfoByWebViewId.delete(webViewId);
 
-        const userDataKey = `${USER_DATA_KEY}${webViewId}`;
-        papi.storage.deleteUserData(executionToken, userDataKey);
-      }
-    },
-  );
+      const userDataKey = `${USER_DATA_KEY}${webViewId}`;
+      papi.storage.deleteUserData(executionToken, userDataKey);
+    }
+  });
 
   const linkWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
     LINK_WEB_VIEW_TYPE,

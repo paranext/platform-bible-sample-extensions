@@ -1,6 +1,6 @@
 import { logger } from '@papi/backend';
 import { VerseRef } from '@sillsdev/scripture';
-import { CommandHandlers } from 'papi-shared-types';
+import type { CommandHandlers } from 'papi-shared-types';
 import { formatScrRef, ScriptureReference } from 'platform-bible-utils';
 
 export interface WebsiteViewerOptions {
