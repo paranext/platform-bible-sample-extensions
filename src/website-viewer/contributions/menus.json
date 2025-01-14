@@ -16,24 +16,6 @@
         "id": "website-viewer.mainMenu"
       },
       {
-        "label": "%websiteViewerMenu_codeSandbox%",
-        "group": "website-viewer.openGroup",
-        "order": -99,
-        "command": "websiteViewer.openCodeSandbox"
-      },
-      {
-        "label": "%websiteViewerMenu_openPT9VideoWebsiteViewer%",
-        "group": "website-viewer.openGroup",
-        "order": -5,
-        "command": "websiteViewer.openPT9Video"
-      },
-      {
-        "label": "%websiteViewerMenu_openPT9HelpWebsiteViewer%",
-        "group": "website-viewer.openGroup",
-        "order": -4,
-        "command": "websiteViewer.openPT9Help"
-      },
-      {
         "label": "%websiteViewerMenu_openUsfmDocsHelpWebsiteViewer%",
         "group": "website-viewer.openGroup",
         "order": -3,
@@ -56,12 +38,6 @@
         "group": "website-viewer.openGroup",
         "order": 2,
         "command": "websiteViewer.openWiBiLex"
-      },
-      {
-        "label": "%websiteViewerMenu_openYouVersionVerseView%",
-        "group": "website-viewer.openGroup",
-        "order": 3,
-        "command": "websiteViewer.openYouVersionVerse"
       },
       {
         "label": "%websiteViewerMenu_openStepBible%",

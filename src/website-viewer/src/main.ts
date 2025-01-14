@@ -129,6 +129,7 @@ const websiteViewerWebViewProvider: IWebViewProvider = {
       contentType: 'url' as WebViewContentType.URL,
       title: getWebViewTitle(titleFormatString, options.websiteName),
       allowScripts: true,
+      allowPopups: true,
     };
   },
 };

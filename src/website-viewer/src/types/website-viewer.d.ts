@@ -3,33 +3,6 @@ declare module 'website-viewer' {}
 declare module 'papi-shared-types' {
   export interface CommandHandlers {
     /**
-     * Opens or updates a Website Viewer web view with a code sandbox mockup and returns the web
-     * view id
-     *
-     * @returns From return value of openWebView: Promise that resolves to the ID of the web view we
-     *   got or undefined if the provider did not create a WebView for this request
-     */
-    'websiteViewer.openCodeSandbox': () => Promise<string | undefined>;
-
-    /**
-     * Opens or updates a Website Viewer web view with a PT9 Video from Vimeo and returns the web
-     * view id
-     *
-     * @returns From return value of openWebView: Promise that resolves to the ID of the web view we
-     *   got or undefined if the provider did not create a WebView for this request
-     */
-    'websiteViewer.openPT9Video': () => Promise<string | undefined>;
-
-    /**
-     * Opens or updates a Website Viewer web view with the paratext.org help website and returns the
-     * web view id
-     *
-     * @returns From return value of openWebView: Promise that resolves to the ID of the web view we
-     *   got or undefined if the provider did not create a WebView for this request
-     */
-    'websiteViewer.openPT9Help': () => Promise<string | undefined>;
-
-    /**
      * Opens or updates a Website Viewer web view with the USFM Docs website and returns the web
      * view id
      *
@@ -63,15 +36,6 @@ declare module 'papi-shared-types' {
      *   got or undefined if the provider did not create a WebView for this request
      */
     'websiteViewer.openWiBiLex': () => Promise<string | undefined>;
-
-    /**
-     * Opens or updates a Website Viewer web view with a YouVersion verse display and returns the
-     * web view id
-     *
-     * @returns From return value of openWebView: Promise that resolves to the ID of the web view we
-     *   got or undefined if the provider did not create a WebView for this request
-     */
-    'websiteViewer.openYouVersionVerse': () => Promise<string | undefined>;
 
     /**
      * Opens or updates a Website Viewer web view with the STEP Bible website and returns the web

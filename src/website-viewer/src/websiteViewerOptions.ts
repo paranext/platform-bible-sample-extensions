@@ -26,10 +26,6 @@ export enum RefChange {
   WatchVerseChange,
 }
 
-function getFirstTwoLetterLanguageCode(interfaceLanguage: string[]): string {
-  return interfaceLanguage.filter((language: string) => language.length === 2)?.[0];
-}
-
 /**
  * Creates a list of integers starting from the _start_ number up to the _end_ number
  *
@@ -51,23 +47,6 @@ function getEnglishBookNameUrlParamForOtn(scrRef: ScriptureReference) {
 }
 
 export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOptions> {
-  const sandboxWebsiteViewerOptions: WebsiteViewerOptions = {
-    getUrl: () => 'https://sykc6v-3000.csb.app/',
-    websiteName: 'CodeSandbox Settings UI mockup',
-  };
-
-  const pt9VideoOptions: WebsiteViewerOptions = {
-    getUrl: () =>
-      'https://player.vimeo.com/video/472226946?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479',
-
-    websiteName: 'PT9 Video',
-  };
-
-  const pt9VHelpOptions: WebsiteViewerOptions = {
-    getUrl: () => 'https://paratext.org/videos/en/paratext-9/',
-    websiteName: 'PT9 Help',
-  };
-
   const usfmDocsOptions: WebsiteViewerOptions = {
     getUrl: () => 'https://docs.usfm.bible/usfm/3.1/index.html',
     websiteName: 'Usfm Docs',
@@ -148,17 +127,8 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
     websiteName: 'GBS WiBiLex',
   };
 
-  const youVersionVerseViewOptions: WebsiteViewerOptions = {
-    getUrl: (scrRef: ScriptureReference) => {
-      const verseRef = new VerseRef(scrRef.bookNum, scrRef.chapterNum, scrRef.verseNum, undefined);
-      return `https://www.bible.com/en-GB/bible/1/${verseRef.book}.${scrRef.chapterNum}.${scrRef.verseNum}`;
-    },
-    websiteName: 'YouVersion',
-    watchRefChange: RefChange.WatchVerseChange,
-  };
-
   const stepBibleOptions: WebsiteViewerOptions = {
-    getUrl: (scrRef: ScriptureReference, interfaceLanguage: string[]) => {
+    getUrl: (scrRef: ScriptureReference) => {
       const books = [
         'Gen',
         'Exod',
@@ -227,8 +197,6 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
         'Jude',
         'Rev',
       ];
-      const languageCode = getFirstTwoLetterLanguageCode(interfaceLanguage);
-      const locale = languageCode ? `&lang=${languageCode[0]}` : '';
       let reference = `${books[scrRef.bookNum - 1]}.${scrRef.chapterNum}`;
       // books with only 1 chapter do not use the chapter number and would interpret it as the verse number
       if (
@@ -239,21 +207,17 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
         books[scrRef.bookNum - 1] === 'Jude'
       )
         reference = books[scrRef.bookNum - 1];
-      return `https://www.stepbible.org/?q=reference=${reference}${locale}`;
+      return `https://www.stepbible.org/?q=reference=${reference}`;
     },
     websiteName: 'STEP Bible',
     watchRefChange: RefChange.WatchChapterChange,
   };
 
   return new Map<keyof CommandHandlers, WebsiteViewerOptions>([
-    ['websiteViewer.openCodeSandbox', sandboxWebsiteViewerOptions],
-    ['websiteViewer.openPT9Video', pt9VideoOptions],
-    ['websiteViewer.openPT9Help', pt9VHelpOptions],
     ['websiteViewer.openUsfmDocs', usfmDocsOptions],
     ['websiteViewer.openOTN', otnOptions],
     ['websiteViewer.openMarble', marbleOptions],
     ['websiteViewer.openWiBiLex', wiBiLexOptions],
-    ['websiteViewer.openYouVersionVerse', youVersionVerseViewOptions],
     ['websiteViewer.openStepBible', stepBibleOptions],
   ]);
 }
