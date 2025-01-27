@@ -149,11 +149,10 @@ const configBase: webpack.Configuration = {
         '..',
         '../../../paranext-core/node_modules/@emotion/styled',
       ),
-      '@mui/material': path.resolve(__dirname, '..', '../../../paranext-core/node_modules/@mui/material'),
-      'react-data-grid': path.resolve(
+      '@mui/material': path.resolve(
         __dirname,
         '..',
-        '../../../paranext-core/node_modules/react-data-grid',
+        '../../../paranext-core/node_modules/@mui/material',
       ),
     },
   },
