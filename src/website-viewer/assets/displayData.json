@@ -1,0 +1,12 @@
+{
+  "icon": "",
+  "moreInfoUrl": "",
+  "supportUrl": "",
+  "localizedDisplayInfo": {
+    "en": {
+      "displayName": "Website Viewer",
+      "shortSummary": "Extension to render websites inside Platform.Bible",
+      "description": "README.md"
+    }
+  }
+}
