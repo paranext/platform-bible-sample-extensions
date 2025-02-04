@@ -1,0 +1,88 @@
+{
+  "mainMenu": {
+    "columns": {},
+    "groups": {
+      "website-viewer.openGroup": {
+        "menuItem": "website-viewer.mainMenu",
+        "order": 2711
+      }
+    },
+    "items": [
+      {
+        "label": "%mainMenu_websiteViewer%",
+        "localizeNotes": "Application main menu > Open Website",
+        "group": "platform.projectResources",
+        "order": -84,
+        "id": "website-viewer.mainMenu"
+      },
+      {
+        "label": "%websiteViewerMenu_openUsfmDocsHelpWebsiteViewer%",
+        "group": "website-viewer.openGroup",
+        "order": -3,
+        "command": "websiteViewer.openUsfmDocs"
+      },
+      {
+        "label": "%websiteViewerMenu_openOTNWebsiteViewer%",
+        "group": "website-viewer.openGroup",
+        "order": 0,
+        "command": "websiteViewer.openOTN"
+      },
+      {
+        "label": "%websiteViewerMenu_openMarbleWebsiteViewer%",
+        "group": "website-viewer.openGroup",
+        "order": 1,
+        "command": "websiteViewer.openMarble"
+      },
+      {
+        "label": "%websiteViewerMenu_openWiBiLexWebsiteViewer%",
+        "group": "website-viewer.openGroup",
+        "order": 2,
+        "command": "websiteViewer.openWiBiLex"
+      },
+      {
+        "label": "%websiteViewerMenu_openStepBible%",
+        "group": "website-viewer.openGroup",
+        "order": 4,
+        "command": "websiteViewer.openStepBible"
+      }
+    ]
+  },
+  "defaultWebViewTopMenu": {
+    "columns": {},
+    "groups": {},
+    "items": []
+  },
+  "defaultWebViewContextMenu": {
+    "groups": {},
+    "items": []
+  },
+  "webViewMenus": {
+    "website-viewer.webView": {
+      "topMenu": {
+        "columns": {
+          "website-viewer.website": {
+            "label": "%websiteViewerMenu_website%",
+            "order": 4711,
+            "isExtensible": true
+          }
+        },
+        "groups": {
+          "website-viewer.website": { "column": "website-viewer.website", "order": 3 }
+        },
+        "items": [
+          {
+            "label": "%websiteViewerMenu_showUrl%",
+            "tooltip": "%websiteViewerMenu_showUrl_tooltip%",
+            "group": "website-viewer.website",
+            "order": 1,
+            "command": "websiteViewer.showUrl"
+          }
+        ]
+      },
+      "contextMenu": {
+        "groups": {},
+        "items": []
+      }
+    }
+  }
+}
