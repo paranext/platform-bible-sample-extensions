@@ -1,7 +1,6 @@
 import { WebViewProps } from '@papi/core';
 import papi, { logger } from '@papi/frontend';
 import { useLocalizedStrings, useProjectData } from '@papi/frontend/react';
-import { VerseRef } from '@sillsdev/scripture';
 import {
   Select,
   SelectContent,
@@ -10,7 +9,7 @@ import {
   SelectValue,
   usePromise,
 } from 'platform-bible-react';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { LocalizeKey } from 'platform-bible-utils';
 import { getWebViewTitle } from './utils';
 
@@ -93,19 +92,14 @@ global.webViewComponent = function VerseRefView({
 
   // Get current verse reference
   const [scrRef] = useWebViewScrollGroupScrRef();
-  // Transform ScriptureReference to VerseRef for project data
-  const verseRef = useMemo(
-    () => new VerseRef(scrRef.bookNum, scrRef.chapterNum, scrRef.verseNum, undefined),
-    [scrRef],
-  );
 
   // Get the current verse from the project
-  const [verse] = useProjectData('platformScripture.USFM_Verse', projectId).VerseUSFM(verseRef, '');
+  const [verse] = useProjectData('platformScripture.USFM_Verse', projectId).VerseUSFM(scrRef, '');
 
   return (
     <div className="tw-m-4">
       <div className="tw-flex tw-items-center">
-        <div className="tw-flex-shrink-0 tw-me-4">{verseRef.toString()}</div>
+        <div className="tw-flex-shrink-0 tw-me-4">{scrRef.toString()}</div>
         <Select
           // Don't allow setting the project id if localization hasn't come in
           disabled={titleFormatString === titleFormatKey}

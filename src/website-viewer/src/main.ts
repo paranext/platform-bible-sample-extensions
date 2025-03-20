@@ -9,9 +9,9 @@ import {
   WebViewContentType,
   WebViewDefinition,
 } from '@papi/core';
-
+import { SerializedVerseRef } from '@sillsdev/scripture';
 import type { CommandHandlers } from 'papi-shared-types';
-import { compareScrRefs, ScriptureReference } from 'platform-bible-utils';
+import { compareScrRefs } from 'platform-bible-utils';
 import linkWebView from './link.web-view?inline';
 import { getWebViewTitle } from './utils';
 import {
@@ -27,7 +27,7 @@ interface BasicWebsiteViewerOptions extends GetWebViewOptions {
 
 interface ScrollGroupInfo {
   scrollGroupScrRef: ScrollGroupScrRef | undefined;
-  scrRef: ScriptureReference;
+  scrRef: SerializedVerseRef;
 }
 
 interface LinkWebViewOptions extends GetWebViewOptions {
@@ -37,8 +37,8 @@ interface LinkWebViewOptions extends GetWebViewOptions {
 const WEBSITE_VIEWER_WEBVIEW_TYPE = 'website-viewer.webView';
 const LINK_WEB_VIEW_TYPE = 'website-viewer.link.webView';
 const USER_DATA_KEY = 'webViewTypeById_';
-const SCR_REF_TO_TRIGGER_UPDATE = {
-  bookNum: -1,
+const SCR_REF_TO_TRIGGER_UPDATE: SerializedVerseRef = {
+  book: '',
   chapterNum: -1,
   verseNum: -1,
 };
@@ -87,7 +87,7 @@ const websiteViewerWebViewProvider: IWebViewProvider = {
     }
 
     // get current scripture reference for granular change detection
-    const currentScriptureReference: ScriptureReference = await getCurrentScriptureReference(
+    const currentScriptureReference: SerializedVerseRef = await getCurrentScriptureReference(
       savedWebView.scrollGroupScrRef,
     );
     // store current scrollGroupScrRef for later comparison if it changed
@@ -140,7 +140,7 @@ const websiteViewerWebViewProvider: IWebViewProvider = {
  */
 async function getCurrentScriptureReference(
   scrollGroupRef: ScrollGroupScrRef | undefined,
-): Promise<ScriptureReference> {
+): Promise<SerializedVerseRef> {
   if (!scrollGroupRef || typeof scrollGroupRef === 'number')
     return papi.scrollGroups.getScrRef(scrollGroupRef);
 
@@ -180,14 +180,14 @@ function registerOpenWebsiteCommandHandlers() {
 
 function shouldUpdateOnScriptureRefChange(
   commandKey: keyof CommandHandlers,
-  oldRef: ScriptureReference,
-  newRef: ScriptureReference,
+  oldRef: SerializedVerseRef,
+  newRef: SerializedVerseRef,
 ) {
   const watchRefChange = websiteOptions.get(commandKey)?.watchRefChange;
 
   if (!watchRefChange) return false;
 
-  const bookChanged: boolean = newRef.bookNum !== oldRef.bookNum;
+  const bookChanged: boolean = newRef.book !== oldRef.book;
   const chapterChanged: boolean = newRef.chapterNum !== oldRef.chapterNum;
   const verseChanged: boolean = newRef.verseNum !== oldRef.verseNum;
 
