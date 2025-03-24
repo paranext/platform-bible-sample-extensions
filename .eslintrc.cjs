@@ -26,6 +26,7 @@ module.exports = {
     // A temporary hack related to IDE not resolving correct package.json
     'import/no-extraneous-dependencies': 'off',
     'import/no-import-module-exports': 'off',
+    'import/prefer-default-export': 'off',
     'react/jsx-filename-extension': 'off',
     'react/react-in-jsx-scope': 'off',
 
@@ -112,11 +113,6 @@ module.exports = {
       rules: { 'no-dupe-keys': 'off' },
     },
     { files: ['*.js'], rules: { strict: 'off' } },
-    {
-      // Don't require extensions to have a default export for "activate()"
-      files: ['*.ts'],
-      rules: { 'import/prefer-default-export': 'off' },
-    },
     {
       files: ['./lib/*', './webpack/*'],
       rules: {
