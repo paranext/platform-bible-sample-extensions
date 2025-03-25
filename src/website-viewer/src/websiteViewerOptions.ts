@@ -1,10 +1,10 @@
 import { logger } from '@papi/backend';
-import { VerseRef } from '@sillsdev/scripture';
+import { Canon, SerializedVerseRef } from '@sillsdev/scripture';
 import type { CommandHandlers } from 'papi-shared-types';
-import { formatScrRef, ScriptureReference } from 'platform-bible-utils';
+import { formatScrRef } from 'platform-bible-utils';
 
 export interface WebsiteViewerOptions {
-  getUrl: (scrRef: ScriptureReference, interfaceLanguage: string[]) => string;
+  getUrl: (scrRef: SerializedVerseRef, interfaceLanguage: string[]) => string;
   // TODO: could be improved by passing in another parameter with the selected text of the active tab
   // (e.g. for a lexicon or Marble to scroll to / highlight a word)
   // for demo purpose this text could for now come from a setting, where users can copy it into
@@ -39,10 +39,10 @@ function createRange(start: number, end: number) {
   return [...Array(end + 1).keys()].filter((i) => i >= start);
 }
 
-function getEnglishBookNameUrlParamForMarble(scrRef: ScriptureReference) {
+function getEnglishBookNameUrlParamForMarble(scrRef: SerializedVerseRef) {
   return formatScrRef(scrRef, 'English').replace(/^((\d\s)?\w+).*$/, '$1'); // e.g. 1 Corinthians
 }
-function getEnglishBookNameUrlParamForOtn(scrRef: ScriptureReference) {
+function getEnglishBookNameUrlParamForOtn(scrRef: SerializedVerseRef) {
   return formatScrRef(scrRef, 'English').replace(/^((\d)\s)?(\w+).*$/, '$3$1'); // e.g. Corinthians1
 }
 
@@ -53,9 +53,10 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
   };
 
   const otnOptions: WebsiteViewerOptions = {
-    getUrl: (scrRef: ScriptureReference) => {
-      const otNtUrlParam = scrRef.bookNum < 40 ? 'The_Old_Testament' : 'The_New_Testament';
-      const verseRef = new VerseRef(scrRef.bookNum, scrRef.chapterNum, scrRef.verseNum, undefined);
+    getUrl: (scrRef: SerializedVerseRef) => {
+      const bookNum: number = Canon.bookIdToNumber(scrRef.book);
+
+      const otNtUrlParam = bookNum < 40 ? 'The_Old_Testament' : 'The_New_Testament';
       const availableOtnBooks = [
         6,
         8,
@@ -69,22 +70,22 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
         ...createRange(48, 66),
       ]; // with added books this may be outdated soon
       const hasEnglishBookName = [40, ...createRange(42, 53), 56, 45, ...createRange(59, 61), 65];
-      let bookName = hasEnglishBookName.includes(scrRef.bookNum)
+      let bookName = hasEnglishBookName.includes(bookNum)
         ? getEnglishBookNameUrlParamForOtn(scrRef)
-        : verseRef.book;
-      if (verseRef.book === 'EST') bookName = 'eth'; // different key for Esther
-      if (verseRef.book === '1TI') bookName = 'tim1';
-      if (verseRef.book === '2TI') bookName = 'tim2';
-      if (verseRef.book === 'HEB') bookName = 'hebrew';
-      if (verseRef.book === '1JN') bookName = 'jn1';
-      if (verseRef.book === '2JN') bookName = 'jn2';
-      if (verseRef.book === '3JN') bookName = 'jn3';
+        : scrRef.book;
+      if (scrRef.book === 'EST') bookName = 'eth';
+      if (scrRef.book === '1TI') bookName = 'tim1';
+      if (scrRef.book === '2TI') bookName = 'tim2';
+      if (scrRef.book === 'HEB') bookName = 'hebrew';
+      if (scrRef.book === '1JN') bookName = 'jn1';
+      if (scrRef.book === '2JN') bookName = 'jn2';
+      if (scrRef.book === '3JN') bookName = 'jn3';
 
-      if (availableOtnBooks.includes(scrRef.bookNum))
+      if (availableOtnBooks.includes(bookNum))
         return `https://opentn.bible/search/?testament=${otNtUrlParam}&book=${bookName.toLowerCase()}`;
 
       logger.warn(
-        `website-viewer: OTN: ${verseRef.book} not available on the open translator notes website, routing to the main page`,
+        `website-viewer: OTN: ${scrRef.book} not available on the open translator notes website, routing to the main page`,
       );
       return 'https://opentn.bible/';
     },
@@ -93,7 +94,8 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
   };
 
   const marbleOptions: WebsiteViewerOptions = {
-    getUrl: (scrRef: ScriptureReference) => {
+    getUrl: (scrRef: SerializedVerseRef) => {
+      const bookNum = Canon.bookIdToNumber(scrRef.book);
       let bookName = getEnglishBookNameUrlParamForMarble(scrRef);
       const otherBookNames: Record<number, string> = {
         22: 'Song of Solomon',
@@ -115,7 +117,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
         61: '2 Pet',
         66: 'Rev',
       };
-      bookName = otherBookNames[scrRef.bookNum] ?? bookName;
+      bookName = otherBookNames[bookNum] ?? bookName;
       return `https://marble.bible/text?book=${bookName}&chapter=${scrRef.chapterNum}&verse=${scrRef.verseNum}`;
     },
     websiteName: 'UBS Marble',
@@ -128,7 +130,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
   };
 
   const stepBibleOptions: WebsiteViewerOptions = {
-    getUrl: (scrRef: ScriptureReference) => {
+    getUrl: (scrRef: SerializedVerseRef) => {
       const books = [
         'Gen',
         'Exod',
@@ -197,16 +199,17 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
         'Jude',
         'Rev',
       ];
-      let reference = `${books[scrRef.bookNum - 1]}.${scrRef.chapterNum}`;
+      const bookNum: number = Canon.bookIdToNumber(scrRef.book);
+      let reference = `${books[bookNum - 1]}.${scrRef.chapterNum}`;
       // books with only 1 chapter do not use the chapter number and would interpret it as the verse number
       if (
-        books[scrRef.bookNum - 1] === 'Obad' ||
-        books[scrRef.bookNum - 1] === 'Phlm' ||
-        books[scrRef.bookNum - 1] === '2John' ||
-        books[scrRef.bookNum - 1] === '3John' ||
-        books[scrRef.bookNum - 1] === 'Jude'
+        books[bookNum - 1] === 'Obad' ||
+        books[bookNum - 1] === 'Phlm' ||
+        books[bookNum - 1] === '2John' ||
+        books[bookNum - 1] === '3John' ||
+        books[bookNum - 1] === 'Jude'
       )
-        reference = books[scrRef.bookNum - 1];
+        reference = books[bookNum - 1];
       return `https://www.stepbible.org/?q=reference=${reference}`;
     },
     websiteName: 'STEP Bible',
