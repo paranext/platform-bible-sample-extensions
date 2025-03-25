@@ -1,5 +1,5 @@
 import { logger } from '@papi/backend';
-import { SerializedVerseRef, Canon } from '@sillsdev/scripture';
+import { Canon, SerializedVerseRef } from '@sillsdev/scripture';
 import type { CommandHandlers } from 'papi-shared-types';
 import { formatScrRef } from 'platform-bible-utils';
 
@@ -73,7 +73,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
       let bookName = hasEnglishBookName.includes(bookNum)
         ? getEnglishBookNameUrlParamForOtn(scrRef)
         : scrRef.book;
-      if (scrRef.book === 'EST') bookName = 'eth'; // different key for Esther
+      if (scrRef.book === 'EST') bookName = 'eth';
       if (scrRef.book === '1TI') bookName = 'tim1';
       if (scrRef.book === '2TI') bookName = 'tim2';
       if (scrRef.book === 'HEB') bookName = 'hebrew';
@@ -95,6 +95,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
 
   const marbleOptions: WebsiteViewerOptions = {
     getUrl: (scrRef: SerializedVerseRef) => {
+      const bookNum = Canon.bookIdToNumber(scrRef.book);
       let bookName = getEnglishBookNameUrlParamForMarble(scrRef);
       const otherBookNames: Record<number, string> = {
         22: 'Song of Solomon',
@@ -116,7 +117,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
         61: '2 Pet',
         66: 'Rev',
       };
-      bookName = otherBookNames[Canon.bookIdToNumber(scrRef.book)] ?? bookName;
+      bookName = otherBookNames[bookNum] ?? bookName;
       return `https://marble.bible/text?book=${bookName}&chapter=${scrRef.chapterNum}&verse=${scrRef.verseNum}`;
     },
     websiteName: 'UBS Marble',
