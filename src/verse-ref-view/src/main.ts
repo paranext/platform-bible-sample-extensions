@@ -61,6 +61,7 @@ const verseRefWebViewProvider: IWebViewProvider = {
 
     return {
       title: getWebViewTitle(titleFormatString, projectName),
+      shouldShowToolbar: true,
       ...savedWebView,
       content: verseRefWebView,
       styles: verseRefWebViewStyles,

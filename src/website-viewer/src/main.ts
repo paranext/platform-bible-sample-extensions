@@ -6,7 +6,6 @@ import {
   IWebViewProvider,
   SavedWebViewDefinition,
   ScrollGroupScrRef,
-  WebViewContentType,
   WebViewDefinition,
 } from '@papi/core';
 import { SerializedVerseRef } from '@sillsdev/scripture';
@@ -124,9 +123,7 @@ const websiteViewerWebViewProvider: IWebViewProvider = {
     return {
       ...savedWebView,
       content: url,
-      // work around for bad enum export in papi
-      // eslint-disable-next-line no-type-assertion/no-type-assertion
-      contentType: 'url' as WebViewContentType.URL,
+      contentType: 'url',
       title: getWebViewTitle(titleFormatString, options.websiteName),
       allowScripts: true,
       allowPopups: true,
