@@ -127,6 +127,7 @@ const websiteViewerWebViewProvider: IWebViewProvider = {
       title: getWebViewTitle(titleFormatString, options.websiteName),
       allowScripts: true,
       allowPopups: true,
+      shouldShowToolbar: options.watchRefChange !== RefChange.DoNotWatch,
     };
   },
 };

@@ -3,6 +3,12 @@ import { Canon, SerializedVerseRef } from '@sillsdev/scripture';
 import type { CommandHandlers } from 'papi-shared-types';
 import { formatScrRef } from 'platform-bible-utils';
 
+export enum RefChange {
+  DoNotWatch,
+  WatchBookChange,
+  WatchChapterChange,
+  WatchVerseChange,
+}
 export interface WebsiteViewerOptions {
   getUrl: (scrRef: SerializedVerseRef, interfaceLanguage: string[]) => string;
   // TODO: could be improved by passing in another parameter with the selected text of the active tab
@@ -10,21 +16,15 @@ export interface WebsiteViewerOptions {
   // for demo purpose this text could for now come from a setting, where users can copy it into
   // alternatively an input on the main toolbar - if extensions can do a thing like adding controls to the main toolbar
   websiteName: string;
-  watchRefChange?: RefChange;
+  watchRefChange: RefChange;
 }
 
 // satisfy typescript, although we do not expect these to appear
 export const DEFAULT_WEBSITE_VIEWER_OPTIONS: WebsiteViewerOptions = {
   getUrl: () => '',
   websiteName: '',
+  watchRefChange: RefChange.DoNotWatch,
 };
-
-export enum RefChange {
-  DoNotWatch,
-  WatchBookChange,
-  WatchChapterChange,
-  WatchVerseChange,
-}
 
 /**
  * Creates a list of integers starting from the _start_ number up to the _end_ number
@@ -50,6 +50,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
   const usfmDocsOptions: WebsiteViewerOptions = {
     getUrl: () => 'https://docs.usfm.bible/usfm/3.1/index.html',
     websiteName: 'Usfm Docs',
+    watchRefChange: RefChange.DoNotWatch,
   };
 
   const otnOptions: WebsiteViewerOptions = {
@@ -127,6 +128,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
   const wiBiLexOptions: WebsiteViewerOptions = {
     getUrl: () => 'https://www.die-bibel.de/ressourcen/wibilex',
     websiteName: 'GBS WiBiLex',
+    watchRefChange: RefChange.DoNotWatch,
   };
 
   const stepBibleOptions: WebsiteViewerOptions = {
