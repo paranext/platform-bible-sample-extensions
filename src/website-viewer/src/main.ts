@@ -159,7 +159,7 @@ const linkWebViewProvider: IWebViewProvider = {
     return {
       ...savedWebView,
       content: linkWebView,
-      title: '%websiteViewerMenu_showUrl%',
+      title: '%websiteViewerMenu_openUrl%',
       allowPopups: true,
       state: { url: getWebViewOptions.url },
     };
@@ -328,11 +328,10 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
   );
 
   const openUrlWebViewPromise = papi.commands.registerCommand(
-    'websiteViewer.showUrl',
+    'websiteViewer.openUrl',
     async (webViewId) => {
       const url = getUrlForWebView(webViewId);
-      const options: LinkWebViewOptions = { url, existingId: '?' }; // only open 1 instance at a time
-      return papi.webViews.openWebView(LINK_WEB_VIEW_TYPE, undefined, options);
+      return papi.commands.sendCommand('platform.openWindow', url);
     },
   );
 

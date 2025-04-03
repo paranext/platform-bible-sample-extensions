@@ -71,11 +71,12 @@
         },
         "items": [
           {
-            "label": "%websiteViewerMenu_showUrl%",
-            "tooltip": "%websiteViewerMenu_showUrl_tooltip%",
+            "label": "%websiteViewerMenu_openUrl%",
+            "tooltip": "%websiteViewerMenu_openUrl_tooltip%",
             "group": "website-viewer.website",
             "order": 1,
-            "command": "websiteViewer.showUrl"
+            "command": "websiteViewer.openUrl",
+            "iconPathAfter": "papi-extension://platformScripture/assets/icons/external-link.svg"
           }
         ]
       },
