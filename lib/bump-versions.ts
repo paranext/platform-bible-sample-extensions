@@ -18,7 +18,7 @@ const newVersion = process.argv[2];
 
   // Checkout a new branch
   try {
-    await execCommand(`git checkout -b branchName`);
+    await execCommand(`git checkout -b ${branchName}`);
   } catch (e) {
     console.error(`Error on git checkout: ${e}`);
     return 1;
