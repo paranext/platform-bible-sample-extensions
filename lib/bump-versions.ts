@@ -58,12 +58,9 @@ const newVersion = process.argv[2];
       // Write the updated manifest to the extension directory
       await fs.promises.writeFile(
         ext.manifestPath,
-        JSON.stringify(updatedManifest, undefined, 2),
+        `${JSON.stringify(updatedManifest, undefined, 2)}\n`,
         'utf8',
       );
-      await execCommand(`npm run bump-manifest-version ${newVersion}`, {
-        cwd: ext.dirPath,
-      });
     } catch (e) {
       console.error(`Error on bumping manifest version for extension ${ext.name}: ${e}`);
       return 1;

@@ -80,7 +80,7 @@ export async function execCommand(
   options: ExecOptions & { quiet?: boolean } = {},
 ): Promise<{ stdout: string; stderr: string }> {
   const { quiet, ...execOptions } = options;
-  if (!quiet) console.log(`\n> ${command}`);
+  if (!quiet) console.log(`\n>${execOptions.cwd ? ` cd ${execOptions.cwd};` : ''} ${command}`);
   try {
     const result = await execAsync(command, {
       cwd: path.resolve(path.join(__dirname, '..')),
