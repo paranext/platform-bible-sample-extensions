@@ -47,16 +47,15 @@ declare module 'papi-shared-types' {
     'websiteViewer.openStepBible': () => Promise<string | undefined>;
 
     /**
-     * Opens or updates a web view showing a link to the url that the Website Viewer tab was opened
-     * with. Clicking that link will open the url in the default browser of the OS.
+     * Opens a browser window on the operating system with the url that the Website Viewer tab was
+     * opened with in Platform.Bible
      *
      * Note: this command is intended to work from the web view menu
      *
      * @param webViewId The web view id of the current web view to look up the type and get the url,
      *   provided by the web view menu
-     * @returns From return value of openWebView: Promise that resolves to the id of the link web
-     *   view or undefined if the provider did not create a link web view
+     * @returns Promise of void
      */
-    'websiteViewer.showUrl': (webViewId: string) => Promise<string | undefined>;
+    'websiteViewer.openUrl': (webViewId: string) => Promise<void>;
   }
 }

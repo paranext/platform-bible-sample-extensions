@@ -10,9 +10,8 @@
       "%websiteViewerMenu_openWiBiLexWebsiteViewer%": "WiBiLex (German Bible Society)",
       "%websiteViewerMenu_openStepBible%": "STEP Bible",
       "%websiteViewerMenu_website%": "Website",
-      "%websiteViewerMenu_showUrl%": "Show website url",
-      "%websiteViewerMenu_showUrl_tooltip%": "Show the url that was used to load this tab. It might not be the current url in case you navigated inside the website.",
-      "%websiteViewerMenu_clickLink%": "Click this link to open the url in the web browser of your operating system. You may close this window afterwards. This url display will not update until you reopen it from the menu of a website viewer tab."
+      "%websiteViewerMenu_openUrl%": "Open website in a browser",
+      "%websiteViewerMenu_openUrl_tooltip%": "Opens the website in your web browser with the url that was used to load this tab. It might not be the current url in case you navigated inside the website."
     }
   }
 }
