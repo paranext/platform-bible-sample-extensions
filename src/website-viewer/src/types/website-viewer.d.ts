@@ -47,7 +47,7 @@ declare module 'papi-shared-types' {
     'websiteViewer.openStepBible': () => Promise<string | undefined>;
 
     /**
-     * Opens a browser window on the operation system with the url that the Website Viewer tab was
+     * Opens a browser window on the operating system with the url that the Website Viewer tab was
      * opened with in Platform.Bible
      *
      * Note: this command is intended to work from the web view menu

@@ -11,7 +11,6 @@ import {
 import { SerializedVerseRef } from '@sillsdev/scripture';
 import type { CommandHandlers } from 'papi-shared-types';
 import { compareScrRefs } from 'platform-bible-utils';
-import linkWebView from './link.web-view?inline';
 import { getWebViewTitle } from './utils';
 import {
   DEFAULT_WEBSITE_VIEWER_OPTIONS as DEFAULT_OPTIONS,
@@ -29,12 +28,7 @@ interface ScrollGroupInfo {
   scrRef: SerializedVerseRef;
 }
 
-interface LinkWebViewOptions extends GetWebViewOptions {
-  url: string;
-}
-
 const WEBSITE_VIEWER_WEBVIEW_TYPE = 'website-viewer.webView';
-const LINK_WEB_VIEW_TYPE = 'website-viewer.link.webView';
 const USER_DATA_KEY = 'webViewTypeById_';
 const SCR_REF_TO_TRIGGER_UPDATE: SerializedVerseRef = {
   book: '',
@@ -144,27 +138,6 @@ async function getCurrentScriptureReference(
 
   return Promise.resolve(scrollGroupRef);
 }
-
-/** Simple web view provider that provides link web views when papi requests them */
-const linkWebViewProvider: IWebViewProvider = {
-  async getWebView(
-    savedWebView: SavedWebViewDefinition,
-    getWebViewOptions: LinkWebViewOptions,
-  ): Promise<WebViewDefinition | undefined> {
-    if (savedWebView.webViewType !== LINK_WEB_VIEW_TYPE)
-      throw new Error(
-        `${LINK_WEB_VIEW_TYPE} provider received request to provide a ${savedWebView.webViewType} web view`,
-      );
-
-    return {
-      ...savedWebView,
-      content: linkWebView,
-      title: '%websiteViewerMenu_openUrl%',
-      allowPopups: true,
-      state: { url: getWebViewOptions.url },
-    };
-  },
-};
 
 function registerOpenWebsiteCommandHandlers() {
   websiteOptions = getWebsiteOptions();
@@ -317,11 +290,6 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     }
   });
 
-  const linkWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
-    LINK_WEB_VIEW_TYPE,
-    linkWebViewProvider,
-  );
-
   const websiteViewerWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
     WEBSITE_VIEWER_WEBVIEW_TYPE,
     websiteViewerWebViewProvider,
@@ -342,7 +310,6 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     scrollGroupUpdateUnsubscriber,
     webViewUpdateUnsubscriber,
     webViewCloseUnsubscriber,
-    await linkWebViewProviderPromise,
     await websiteViewerWebViewProviderPromise,
     await openUrlWebViewPromise,
     ...(await Promise.all(commandPromises)),
