@@ -1,4 +1,5 @@
 name: Publish
+run-name: Publish release v${{ github.event.inputs.version }} on ${{ github.head_ref || github.ref_name }}
 
 on:
   workflow_dispatch:
@@ -6,13 +7,8 @@ on:
       version:
         description: 'Version to publish. For verification purposes only; if the package.json version is different on the specified branch, the workflow will fail.'
         required: true
-      allowUpdate:
-        type: boolean
-        description: 'Upload new release files to the release if it already exists. If false, will fail if the release already exists.'
-        required: false
-        default: false
-      bumpVersion:
-        description: "Version to bump all the repo's versions to on a new branch (called `bump-versions-<version>`) after making a new release. If empty, will not bump the versions."
+      newVersionAfterPublishing:
+        description: "Version to bump all the repo's versions to on a new branch (called `bump-versions-<version>`) after making a new release, e.g. 0.3.0-alpha.0. If empty, will not bump the versions."
         required: false
       bumpRef:
         description: 'Git ref to create the new `bump-versions-<version>` branch from. If empty, will use the current branch.'
@@ -30,6 +26,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    defaults:
+      run:
+        working-directory: ./extension-repo
+
     permissions:
       contents: write
 
@@ -38,14 +38,26 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
+      - name: Output Workflow Dispatch Inputs
+        working-directory: ./
+        run: echo "${{ toJSON(github.event.inputs) }}"
+
       - name: Checkout git repo
         uses: actions/checkout@v4
+        with:
+          path: extension-repo
+
+      - name: Checkout paranext-core repo to use its sub-packages
+        uses: actions/checkout@v4
+        with:
+          path: paranext-core
+          repository: paranext/paranext-core
 
       - name: Read package.json
         id: package_json
         uses: zoexx/github-action-json-file-properties@1.0.6
         with:
-          file_path: 'package.json'
+          file_path: 'extension-repo/package.json'
 
       - name: Verify version (skips if versions match)
         if: '${{ inputs.version != steps.package_json.outputs.version }}'
@@ -56,22 +68,32 @@ jobs:
       - name: Install Node and NPM
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ fromJson(steps.package_json.outputs.volta).node }}
           cache: npm
+          cache-dependency-path: |
+            extension-repo/package-lock.json
+            paranext-core/package-lock.json
+          node-version: ${{ fromJson(steps.package_json.outputs.volta).node }}
 
-      - name: Install packages and build
+      - name: Install packages
         run: |
           npm ci
+
+      - name: Install core packages
+        working-directory: paranext-core
+        run: |
+          npm ci --ignore-scripts
+
+      - name: Package for distribution
+        run: |
           npm run package
 
       - name: Publish draft release
         uses: ncipollo/release-action@v1
         with:
-          allowUpdates: ${{ inputs.allowUpdate }}
           artifactErrorsFailBuild: true
           artifacts: |
-            release/*
-          bodyFile: .github/assets/release-body.md
+            extension-repo/release/*
+          bodyFile: extension-repo/.github/assets/release-body.md
           # make the new release a draft instead of automatically publishing
           draft: true
           generateReleaseNotes: true
@@ -86,15 +108,19 @@ jobs:
           updateOnlyUnreleased: true
 
       - name: Checkout bump ref
-        if: ${{ inputs.bumpVersion != '' && inputs.bumpRef != '' }}
+        if: ${{ inputs.newVersionAfterPublishing != '' && inputs.bumpRef != '' && inputs.bumpRef != (github.head_ref || github.ref_name) }}
         uses: actions/checkout@v4
         with:
+          clean: false
+          path: extension-repo
           ref: ${{ inputs.bumpRef }}
 
       - name: Bump repo versions
-        if: ${{ inputs.bumpVersion != '' }}
+        if: ${{ inputs.newVersionAfterPublishing != '' }}
         run: |
-          npm run bump-versions -- ${{ inputs.bumpVersion }}
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          npm run bump-versions -- ${{ inputs.newVersionAfterPublishing }}
 
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
       - name: Setup tmate session
