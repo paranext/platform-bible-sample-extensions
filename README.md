@@ -174,7 +174,7 @@ To package these extensions into a zip file for distribution:
    # cd to each extension folder
    npm version <version> --git-tag-version false
    # Change version in each extension's `manifest.json`
-   git commit -a -m "Bumped version to 0.1.0"; git push -u origin HEAD
+   git commit -a -m "Bumped versions to <version>"; git push -u origin HEAD
    ```
 
     </details>
