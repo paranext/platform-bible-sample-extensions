@@ -7,12 +7,15 @@ import { checkForWorkingChanges, execCommand } from './git.util';
 // this script.
 
 // Provide the new version as a command line argument e.g. `node bump-versions.js 1.2.3-alpha.0`
+// Provide `--allow-working-changes` after the version to allow working changes to be part of making
+// the new version (useful if you want to do other things related to versioning before running this)
 
 const newVersion = process.argv[2];
+const shouldAllowWorkingChanges = process.argv.includes('--allow-working-changes');
 
 (async () => {
   // Make sure there are not working changes so we don't interfere with normal edits
-  if (await checkForWorkingChanges()) return 1;
+  if (!shouldAllowWorkingChanges && (await checkForWorkingChanges())) return 1;
 
   const branchName = `bump-versions-${newVersion}`;
 

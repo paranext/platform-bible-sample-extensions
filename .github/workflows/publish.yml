@@ -15,7 +15,7 @@ on:
         description: "Version to bump all the repo's versions to on a new branch (called `bump-versions-<version>`) after making a new release. If empty, will not bump the versions."
         required: false
       bumpRef:
-        description: 'Git ref to create a new branch from. If empty, will use the current branch.'
+        description: 'Git ref to create the new `bump-versions-<version>` branch from. If empty, will use the current branch.'
         required: true
         default: 'main'
       debug_enabled:
