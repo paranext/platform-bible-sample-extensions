@@ -85,7 +85,7 @@ jobs:
           # only update if the release is still a draft
           updateOnlyUnreleased: true
 
-      - name: Checkout main branch
+      - name: Checkout bump ref
         if: ${{ inputs.bumpVersion != '' && inputs.bumpRef != '' }}
         uses: actions/checkout@v4
         with:
