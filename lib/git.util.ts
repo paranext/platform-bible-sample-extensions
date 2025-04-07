@@ -66,6 +66,8 @@ export const ERROR_STRINGS = Object.fromEntries(
 
 // #endregion
 
+// #region shared with https://github.com/paranext/paranext-extension-template/blob/main/lib/git.util.ts
+
 /**
  * Executes a command from the repo root directory, logging both the command and the results.
  *
@@ -128,6 +130,8 @@ export async function checkForWorkingChanges(quiet = false) {
   }
   return false;
 }
+
+// #endregion
 
 /**
  * Fetch latest from SINGLE_TEMPLATE_REMOTE_NAME

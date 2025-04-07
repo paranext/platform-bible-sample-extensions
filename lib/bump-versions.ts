@@ -2,6 +2,8 @@ import fs from 'fs';
 import { getExtensions } from '../webpack/webpack.util';
 import { checkForWorkingChanges, execCommand } from './git.util';
 
+// #region shared with https://github.com/paranext/paranext-extension-template/blob/main/lib/bump-version.ts#L53
+
 // This script checks out a new branch, bumps the versions of all extensions in the repo,
 // and then commits the changes. It is generally expected that you will be on `main` when you run
 // this script.
@@ -37,6 +39,8 @@ const shouldAllowWorkingChanges = process.argv.includes('--allow-working-changes
     return 1;
   }
 
+  // #endregion
+
   // Get list of extensions to update
   /** All extension folders in this repo */
   const extensions = await getExtensions();
@@ -71,6 +75,8 @@ const shouldAllowWorkingChanges = process.argv.includes('--allow-working-changes
   }
   /* eslint-enable no-restricted-syntax, no-await-in-loop */
 
+  // #region shared with https://github.com/paranext/paranext-extension-template/blob/main/lib/bump-version.ts#L53
+
   // Commit the changes
   try {
     await execCommand(`git commit -a -m "Bump versions to ${newVersion}"`);
@@ -89,3 +95,5 @@ const shouldAllowWorkingChanges = process.argv.includes('--allow-working-changes
     `Bumped versions to ${newVersion} and pushed to branch ${branchName}. Please create a pull request to merge this branch into main.`,
   );
 })();
+
+// #endregion
