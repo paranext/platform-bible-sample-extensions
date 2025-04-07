@@ -99,7 +99,9 @@ global.webViewComponent = function VerseRefView({
   return (
     <div className="tw-m-4">
       <div className="tw-flex tw-items-center">
-        <div className="tw-flex-shrink-0 tw-me-4">{`${scrRef.book} ${scrRef.chapterNum}:${scrRef.verseNum}`}</div>
+        <div className="tw-flex-shrink-0 tw-me-4">
+          {`${scrRef.book} ${scrRef.chapterNum}:${scrRef.verse ? scrRef.verse : scrRef.verseNum}`}
+        </div>
         <Select
           // Don't allow setting the project id if localization hasn't come in
           disabled={titleFormatString === titleFormatKey}
