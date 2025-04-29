@@ -1,9 +1,7 @@
 import fs from 'fs';
-import path from 'path';
-import { getExtensions } from '../webpack/webpack.util';
 import { checkForWorkingChanges, execCommand } from './git.util';
 
-// #region shared with https://github.com/paranext/paranext-extension-template/blob/main/lib/bump-versions.ts and https://github.com/paranext/paranext/blob/main/lib/bump-versions.ts
+// #region shared with https://github.com/paranext/paranext-multi-extension-template/blob/main/lib/bump-versions.ts and https://github.com/paranext/paranext/blob/main/lib/bump-versions.ts
 
 // This script checks out a new branch, bumps the versions of all extensions in the repo,
 // and then commits the changes. It is generally expected that you will be on `main` when you run
@@ -42,53 +40,23 @@ const shouldAllowWorkingChanges = process.argv.includes('--allow-working-changes
 
   // #endregion
 
-  // Get list of extensions to update
-  /** All extension folders in this repo */
-  const extensions = await getExtensions();
-
-  // Bump the version in each extension
-  // We intend to run these one at a time, so for/of works well here
-  /* eslint-disable no-restricted-syntax, no-await-in-loop */
-  for (const ext of extensions) {
-    // Bump the package version in the extension if the package.json exists
-    let packageJsonExists = true;
-    try {
-      await fs.promises.access(path.resolve(ext.dirPath, 'package.json'));
-    } catch (e) {
-      console.log(
-        `Error while accessing ${ext.name}'s package.json: ${e}. If the extension does not have a package.json, this is not a problem.`,
-      );
-      packageJsonExists = false;
-    }
-
-    if (packageJsonExists) {
-      try {
-        await execCommand(bumpVersionCommand, {
-          cwd: ext.dirPath,
-        });
-      } catch (e) {
-        console.error(`Error on bumping package version for extension ${ext.name}: ${e}`);
-        return 1;
-      }
-    }
-
-    // Bump the manifest version in the extension
-    try {
-      const updatedManifest = { ...ext.manifest, version: newVersion };
-      // Write the updated manifest to the extension directory
-      await fs.promises.writeFile(
-        ext.manifestPath,
-        `${JSON.stringify(updatedManifest, undefined, 2)}\n`,
-        'utf8',
-      );
-    } catch (e) {
-      console.error(`Error on bumping manifest version for extension ${ext.name}: ${e}`);
-      return 1;
-    }
+  // Bump the manifest version in the extension
+  try {
+    const manifestPath = 'manifest.json';
+    const manifest = JSON.parse(await fs.promises.readFile(manifestPath, 'utf8'));
+    const updatedManifest = { ...manifest, version: newVersion };
+    // Write the updated manifest to the extension directory
+    await fs.promises.writeFile(
+      manifestPath,
+      `${JSON.stringify(updatedManifest, undefined, 2)}\n`,
+      'utf8',
+    );
+  } catch (e) {
+    console.error(`Error on bumping manifest version: ${e}`);
+    return 1;
   }
-  /* eslint-enable no-restricted-syntax, no-await-in-loop */
 
-  // #region shared with https://github.com/paranext/paranext-extension-template/blob/main/lib/bump-versions.ts and https://github.com/paranext/paranext/blob/main/lib/bump-versions.ts
+  // #region shared with https://github.com/paranext/paranext-multi-extension-template/blob/main/lib/bump-versions.ts and https://github.com/paranext/paranext/blob/main/lib/bump-versions.ts
 
   // Commit the changes
   try {

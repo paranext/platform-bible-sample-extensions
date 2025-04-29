@@ -1,0 +1,17 @@
+{
+  "name": "themeSelector",
+  "version": "0.3.0-alpha.0",
+  "publisher": "platform",
+  "displayData": "assets/displayData.json",
+  "author": "Paranext",
+  "license": "MIT",
+  "main": "src/main.ts",
+  "extensionDependencies": {},
+  "elevatedPrivileges": [],
+  "types": "src/types/theme-selector.d.ts",
+  "menus": "contributions/menus.json",
+  "settings": "contributions/settings.json",
+  "projectSettings": "contributions/projectSettings.json",
+  "localizedStrings": "contributions/localizedStrings.json",
+  "activationEvents": []
+}

@@ -1,0 +1,12 @@
+{
+  "icon": "",
+  "moreInfoUrl": "",
+  "supportUrl": "",
+  "localizedDisplayInfo": {
+    "en": {
+      "displayName": "Theme Selector",
+      "shortSummary": "Choose from available themes and edit user-defined themes in Platform.Bible",
+      "description": "assets/descriptions/description-en.md"
+    }
+  }
+}
