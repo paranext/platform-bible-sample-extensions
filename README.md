@@ -40,6 +40,8 @@ For your extension name, we recommend that you use [lowerCamelCase](https://deve
   - Adjust as desired (feel free to choose a different license)
   - If you choose to stay with the current license, update the copyright statement
 
+- In `.github/assets/release-body.md`, make adjustments as desired
+
 #### Create your first extension in this repo
 
 Follow the steps in [To create a new extension in this repo](#to-create-a-new-extension-in-this-repo) to create your first extension in this repo! You can follow the same steps to create new extensions as desired.
@@ -71,6 +73,9 @@ This is a Webpack project configured to build Platform.Bible extensions. The gen
         - `assets/descriptions/description-<locale>.md` contains a brief description of the extension in the language specified by `<locale>`
     - `contributions/` contains JSON files the platform uses to extend data structures for things like menus and settings. The JSON files are referenced from the manifest
     - `public/` contains other static files that are copied into the build folder
+- `.github/` contains files to facilitate integration with GitHub
+  - `.github/workflows` contains [GitHub Actions](https://github.com/features/actions) workflows for automating various processes in this repo
+  - `.github/assets/release-body.md` combined with a generated changelog becomes the body of [releases published using GitHub Actions](#publishing)
 - `dist/` is a generated folder containing the built extension files
 - `release/` is a generated folder containing zips of the built extension files
 
@@ -145,7 +150,7 @@ These steps will walk you through releasing a version on GitHub and bumping the 
 
    - `version`: enter the version you intend to publish (e.g. 0.2.0). This is simply for verification to make sure you release the code that you intend to release. It is compared to the version in the code, and the workflow will fail if they do not match.
    - `newVersionAfterPublishing`: enter the version you want to bump to after releasing (e.g. 0.3.0-alpha.0). Future changes will apply to this new version instead of to the version that was already released. Leave blank if you don't want to bump
-   - `bumpRef`: enter the Git ref you want to create the bump versions branch from, e.g. `main`. Leave blank if you want to use the branch selected for the workflow run. For example, if you release from a stable branch named `release-prep`, you may want to bump the version on `main` so future development work happens on the new version, then you can rebase `main` onto `release-prep` when you are ready to start preparing the next stable release.
+   - `bumpRef`: enter the Git ref you want to create the bump versions branch from, e.g. `main`. Leave blank if you want to use the branch selected for the workflow run. For example, if you release from a stable branch named `release-prep`, you may want to bump the version on `main` so future development work happens on the new version, then you can rebase `release-prep` onto `main` when you are ready to start preparing the next stable release.
 
     <details>
         <summary>[Optional] Create a new pre-release and bump versions branch manually </summary>
@@ -207,7 +212,10 @@ To create a new extension in this repo, make sure your repo has no working chang
 npm run create-extension -- <extension-name>
 ```
 
-Then follow [the instructions for customizing the new extension](https://github.com/paranext/paranext-extension-template#customize-extension-details).
+Then follow [the instructions for customizing the new extension](https://github.com/paranext/paranext-extension-template#customize-extension-details) with a few modifications:
+
+- Follow the instructions for replacing placeholders inside the `src/<extension-name>` folder, not at this repo root, except in specific situations:
+  - Instead of editing the `.github/assets/release-body.md` inside the extension, add information about the new extension in `.github/assets/release-body.md` at this repo root.
 
 **Note:** The merge/squash commits created when creating a new extension are important; Git uses them to compare the files for future updates. If you edit this repo's Git history, please preserve these commits (do not squash them, for example) to avoid duplicated merge conflicts in the future.
 
