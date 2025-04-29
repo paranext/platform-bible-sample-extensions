@@ -2,7 +2,15 @@
   "mainMenu": {
     "columns": {},
     "groups": {},
-    "items": []
+    "items": [
+      {
+        "label": "%mainMenu_openThemeSelector%",
+        "localizeNotes": "Application main menu > Project > Open Verse Ref View",
+        "group": "platform.projectResources",
+        "order": 1000,
+        "command": "themeSelector.open"
+      }
+    ]
   },
   "defaultWebViewTopMenu": {
     "columns": {},

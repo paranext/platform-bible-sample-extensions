@@ -1,6 +1,10 @@
 {
   "metadata": {},
   "localizedStrings": {
-    "en": {}
+    "en": {
+      "%mainMenu_openThemeSelector%": "Choose Theme",
+      "%themeSelector_title%": "Theme Selector",
+      "%themeSelector_toggle_shouldMatchSystem_label%": "Should Match System?"
+    }
   }
 }
