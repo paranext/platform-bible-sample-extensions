@@ -1,5 +1,6 @@
 Includes:
 
+- Theme Selector Extension
 - Verse Ref View Extension
 - Website Viewer Extension
 
