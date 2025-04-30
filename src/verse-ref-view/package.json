@@ -1,7 +1,7 @@
 {
   "name": "verse-ref-view",
   "private": true,
-  "version": "0.3.0-alpha.0",
+  "version": "0.3.0-alpha.1",
   "main": "src/main.js",
   "types": "src/types/verse-ref-view.d.ts",
   "author": "Paranext",
