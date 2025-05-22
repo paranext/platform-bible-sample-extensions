@@ -11,6 +11,18 @@ import {
 import { useMemo } from 'react';
 import { Button, Checkbox } from 'platform-bible-react';
 
+const LOCALIZED_STRINGS: LocalizeKey[] = [
+  '%mainMenu_openThemeSelector%',
+  '%themeSelector_title%',
+  '%themeSelector_toggle_shouldMatchSystem_label%',
+  '%theme_label_light%',
+  '%theme_label_dark%',
+  '%theme_label_paratext_light%',
+  '%theme_label_paratext_dark%',
+  '%theme_label_user_light%',
+  '%theme_label_user_dark%',
+];
+
 /** Placeholder theme to detect when we are loading */
 const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
   themeFamilyId: '',
@@ -25,9 +37,14 @@ const DEFAULT_ALL_THEMES: ThemeFamiliesByIdExpanded = {};
 const DEFAULT_SHOULD_MATCH_SYSTEM = true;
 
 globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
+  logger.warn('Start of ThemeSelector');
   // I know this is a LocalizeKey
   // eslint-disable-next-line no-type-assertion/no-type-assertion
   const titleKey = (title ?? '') as LocalizeKey;
+
+  logger.warn('ThemeSelector - titleKey: ', titleKey);
+
+  /*
   const [
     {
       [titleKey]: titleLocalized,
@@ -37,15 +54,23 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     // ENHANCEMENT: Localize theme labels
     useMemo(() => [titleKey, '%themeSelector_toggle_shouldMatchSystem_label%'], [titleKey]),
   );
+  */
+  const [localizedStrings] = useLocalizedStrings(useMemo(() => LOCALIZED_STRINGS, []));
 
   const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
+
+  logger.warn('ThemeSelector - after useDataProvider call');
 
   // ENHANCEMENT: update user-defined themes. Can pull `setAllThemes` from here
   const [allThemesPossiblyError] = useData<typeof papi.themes.dataProviderName>(
     themeDataProvider,
   ).AllThemes(undefined, DEFAULT_ALL_THEMES);
 
+  logger.warn('ThemeSelector - after useData call 1');
+
   const allThemes = useMemo(() => {
+    logger.warn('ThemeSelector - useMemo 1');
+
     if (isPlatformError(allThemesPossiblyError)) {
       logger.warn(
         `Theme Selector error on retrieving All Themes: ${getErrorMessage(allThemesPossiblyError)}`,
@@ -61,7 +86,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
       DEFAULT_SHOULD_MATCH_SYSTEM,
     );
 
+  logger.warn('ThemeSelector - after useData call 2');
+
   const shouldMatchSystem = useMemo(() => {
+    logger.warn('ThemeSelector - useMemo 1');
+
     if (isPlatformError(shouldMatchSystemPossiblyError)) {
       logger.warn(
         `Theme Selector error on retrieving Should Match System: ${getErrorMessage(shouldMatchSystemPossiblyError)}`,
@@ -75,8 +104,12 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     themeDataProvider,
   ).CurrentTheme(undefined, DEFAULT_THEME_VALUE);
 
+  logger.warn('ThemeSelector - after useData call 3');
+
   /** Get the theme on first load so we can show the right symbol on the toolbar */
   const theme = useMemo(() => {
+    logger.warn('ThemeSelector - useMemo 2');
+
     // Warn if the theme came back as a PlatformError. Will handle the PlatformError elsewhere too
     if (isPlatformError(themePossiblyError))
       logger.warn(`Error getting theme for toolbar button. ${getErrorMessage(theme)}`);
@@ -84,9 +117,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     return papi.themes.getCurrentThemeSync();
   }, [themePossiblyError]);
 
+  logger.warn('ThemeSelector - before return');
+
   return (
     <div>
-      <div>{titleLocalized}</div>
+      <div>{localizedStrings['%themeSelector_title%']}</div>
       <div>
         {Object.entries(allThemes).map(([themeFamilyId, themeFamily]) => (
           <div key={themeFamilyId}>
@@ -97,6 +132,9 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 onClick={() => {
                   try {
                     setCurrentTheme?.({ themeFamilyId, type });
+                    logger.info('type: ', { type });
+                    logger.info('themeFamilyId: ', { themeFamilyId });
+                    logger.info('themeToDisplay: ', { themeToDisplay });
                   } catch (e) {
                     logger.warn(
                       `Failed to set theme to ${themeFamilyId} ${type}: ${getErrorMessage(e)}`,
@@ -105,14 +143,14 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 }}
                 variant={theme.id === themeToDisplay?.id ? 'outline' : 'default'}
               >
-                {themeToDisplay?.id}
+                {localizedStrings[themeToDisplay?.label]}
               </Button>
             ))}
           </div>
         ))}
       </div>
       <div>
-        {shouldMatchSystemLabel}
+        {localizedStrings['%themeSelector_toggle_shouldMatchSystem_label%']}
         <Checkbox
           disabled={isLoadingShouldMatchSystem}
           checked={shouldMatchSystem}

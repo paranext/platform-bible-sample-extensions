@@ -4,7 +4,24 @@
     "en": {
       "%mainMenu_openThemeSelector%": "Choose Theme",
       "%themeSelector_title%": "Theme Selector",
-      "%themeSelector_toggle_shouldMatchSystem_label%": "Should Match System?"
+      "%themeSelector_toggle_shouldMatchSystem_label%": "Should Match System?",
+      "%theme_label_light%": "Light",
+      "%theme_label_dark%": "Dark",
+      "%theme_label_paratext_light%": "Paratext Light",
+      "%theme_label_paratext_dark%": "Paratext Dark",
+      "%theme_label_user_light%": "User Light",
+      "%theme_label_user_dark%": "User Dark"
+    },
+    "es": {
+      "%mainMenu_openThemeSelector%": "Elija el tema",
+      "%themeSelector_title%": "Selector de temas",
+      "%themeSelector_toggle_shouldMatchSystem_label%": "?Deberia coincidir el sistema?",
+      "%theme_label_light%": "Ligera",
+      "%theme_label_dark%": "Oscura",
+      "%theme_label_paratext_light%": "Paratext Ligera",
+      "%theme_label_paratext_dark%": "Paratext Oscura",
+      "%theme_label_user_light%": "Usuaria Ligera",
+      "%theme_label_user_dark%": "Usuaria Oscura"
     }
   }
 }
