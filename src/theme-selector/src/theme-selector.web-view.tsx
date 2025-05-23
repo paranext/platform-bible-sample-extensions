@@ -143,7 +143,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 }}
                 variant={theme.id === themeToDisplay?.id ? 'outline' : 'default'}
               >
-                {localizedStrings[themeToDisplay?.label]}
+                {themeToDisplay !== undefined ? localizedStrings[themeToDisplay.label] : ''}
               </Button>
             ))}
           </div>
