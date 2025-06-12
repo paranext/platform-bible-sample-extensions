@@ -1,6 +1,7 @@
 import { WebViewProps } from '@papi/core';
 import papi, { logger } from '@papi/frontend';
 import { useData, useDataProvider, useLocalizedStrings } from '@papi/frontend/react';
+//import { USER_THEME_FAMILY_PREFIX } from 'papi.themes.USER_THEME_FAMILY_PREFIX';
 
 import {
   getErrorMessage,
@@ -33,6 +34,8 @@ const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
   cssVariables: {},
 };
 
+const USER_THEME_FAMILY_PREFIX = 'user-';
+
 const DEFAULT_ALL_THEMES: ThemeFamiliesByIdExpanded = {};
 
 const DEFAULT_SHOULD_MATCH_SYSTEM = true;
@@ -41,7 +44,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   // I know this is a LocalizeKey
   // eslint-disable-next-line no-type-assertion/no-type-assertion
   const titleKey = (title ?? '') as LocalizeKey;
-
   /*
   const [
     {
@@ -52,7 +54,8 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     // ENHANCEMENT: Localize theme labels
     useMemo(() => [titleKey, '%themeSelector_toggle_shouldMatchSystem_label%'], [titleKey]),
   );
-  */
+
+*/
   const [localizedStrings] = useLocalizedStrings(useMemo(() => LOCALIZED_STRINGS, []));
 
   const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
@@ -124,10 +127,9 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
               >
                 {localizedStrings[themeToDisplay.label]}
                 {themeToDisplay !== undefined &&
-                themeFamilyId.indexOf('-') !== -1 &&
-                themeFamilyId.substring(themeFamilyId.indexOf('-'))
+                themeFamilyId.indexOf(USER_THEME_FAMILY_PREFIX) == 0
                   ? ' ' +
-                    themeFamilyId.substring(themeFamilyId.indexOf('-') + 1, themeFamilyId.length)
+                    themeFamilyId.substring(USER_THEME_FAMILY_PREFIX.length, themeFamilyId.length)
                   : ''}
               </Button>
             ))}
