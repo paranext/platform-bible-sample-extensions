@@ -1,7 +1,6 @@
 import { WebViewProps } from '@papi/core';
 import papi, { logger } from '@papi/frontend';
 import { useData, useDataProvider, useLocalizedStrings } from '@papi/frontend/react';
-//import { USER_THEME_FAMILY_PREFIX } from 'papi.themes.USER_THEME_FAMILY_PREFIX';
 
 import {
   getErrorMessage,
@@ -34,8 +33,6 @@ const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
   cssVariables: {},
 };
 
-const USER_THEME_FAMILY_PREFIX = 'user-';
-
 const DEFAULT_ALL_THEMES: ThemeFamiliesByIdExpanded = {};
 
 const DEFAULT_SHOULD_MATCH_SYSTEM = true;
@@ -44,7 +41,9 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   // I know this is a LocalizeKey
   // eslint-disable-next-line no-type-assertion/no-type-assertion
   const titleKey = (title ?? '') as LocalizeKey;
-  /*
+
+  logger.info('titleKey: ', titleKey);
+
   const [
     {
       [titleKey]: titleLocalized,
@@ -55,8 +54,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     useMemo(() => [titleKey, '%themeSelector_toggle_shouldMatchSystem_label%'], [titleKey]),
   );
 
+  logger.info('titleLocalized: ', titleLocalized);
+
+  /*
+  logger.info('localizedStrings: ', localizedStrings);
 */
-  const [localizedStrings] = useLocalizedStrings(useMemo(() => LOCALIZED_STRINGS, []));
 
   const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
 
@@ -74,6 +76,36 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     }
     return allThemesPossiblyError;
   }, [allThemesPossiblyError]);
+
+  //logger.info('allThemes: ', allThemes);
+
+  const temp: LocalizeKey[] = [];
+
+  Object.entries(allThemes).forEach(([themeFamilyId, themeFamily]) => {
+    if (themeFamily) {
+      Object.entries(themeFamily).forEach(([type, themeToDisplay]) => {
+        if (themeToDisplay) {
+          /*
+          logger.info('theme: ', themeToDisplay);
+          logger.info('type: ', type);
+          logger.info('themeFamily: ', themeFamily);
+          logger.info('themeFamilyId: ', themeFamilyId);
+          */
+
+          temp.push(themeToDisplay.label);
+        }
+      });
+    }
+  });
+
+  const [newLocalizedStrings] = useLocalizedStrings(useMemo(() => temp, []));
+  const [localizedStrings] = useLocalizedStrings(useMemo(() => LOCALIZED_STRINGS, []));
+
+  logger.info('temp: ', temp);
+  logger.info('LOCALIZED_STRINGS: ', LOCALIZED_STRINGS);
+
+  logger.info('localizedStrings: ', localizedStrings);
+  logger.info('newLocalizedStrings: ', newLocalizedStrings);
 
   const [shouldMatchSystemPossiblyError, setShouldMatchSystem, isLoadingShouldMatchSystem] =
     useData<typeof papi.themes.dataProviderName>(themeDataProvider).ShouldMatchSystem(
@@ -106,7 +138,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
 
   return (
     <div>
-      <div>{localizedStrings['%themeSelector_title%']}</div>
+      <div>{titleLocalized}</div>
       <div>
         {Object.entries(allThemes).map(([themeFamilyId, themeFamily]) => (
           <div key={themeFamilyId}>
@@ -127,9 +159,10 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
               >
                 {localizedStrings[themeToDisplay.label]}
                 {themeToDisplay !== undefined &&
-                themeFamilyId.indexOf(USER_THEME_FAMILY_PREFIX) == 0
+                themeFamilyId.indexOf('-') !== -1 &&
+                themeFamilyId.substring(themeFamilyId.indexOf('-'))
                   ? ' ' +
-                    themeFamilyId.substring(USER_THEME_FAMILY_PREFIX.length, themeFamilyId.length)
+                    themeFamilyId.substring(themeFamilyId.indexOf('-') + 1, themeFamilyId.length)
                   : ''}
               </Button>
             ))}
@@ -137,7 +170,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
         ))}
       </div>
       <div>
-        {localizedStrings['%themeSelector_toggle_shouldMatchSystem_label%']}
+        {shouldMatchSystemLabel}
         <Checkbox
           disabled={isLoadingShouldMatchSystem}
           checked={shouldMatchSystem}
