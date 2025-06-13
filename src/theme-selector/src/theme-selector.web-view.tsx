@@ -12,18 +12,6 @@ import {
 import { useMemo } from 'react';
 import { Button, Checkbox } from 'platform-bible-react';
 
-const LOCALIZED_STRINGS: LocalizeKey[] = [
-  '%mainMenu_openThemeSelector%',
-  '%themeSelector_title%',
-  '%themeSelector_toggle_shouldMatchSystem_label%',
-  '%theme_label_light%',
-  '%theme_label_dark%',
-  '%theme_label_paratext_light%',
-  '%theme_label_paratext_dark%',
-  '%theme_label_user_light%',
-  '%theme_label_user_dark%',
-];
-
 /** Placeholder theme to detect when we are loading */
 const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
   themeFamilyId: '',
@@ -56,10 +44,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
 
   logger.info('titleLocalized: ', titleLocalized);
 
-  /*
-  logger.info('localizedStrings: ', localizedStrings);
-*/
-
   const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
 
   // ENHANCEMENT: update user-defined themes. Can pull `setAllThemes` from here
@@ -77,35 +61,25 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     return allThemesPossiblyError;
   }, [allThemesPossiblyError]);
 
-  //logger.info('allThemes: ', allThemes);
+  const localizedKeys = useMemo(() => {
+    const result: LocalizeKey[] = [];
 
-  const temp: LocalizeKey[] = [];
+    Object.entries(allThemes).forEach(([themeFamilyId, themeFamily]) => {
+      if (themeFamily) {
+        Object.entries(themeFamily).forEach(([type, themeToDisplay]) => {
+          if (themeToDisplay) {
+            result.push(themeToDisplay.label);
+          }
+        });
+      }
+    });
 
-  Object.entries(allThemes).forEach(([themeFamilyId, themeFamily]) => {
-    if (themeFamily) {
-      Object.entries(themeFamily).forEach(([type, themeToDisplay]) => {
-        if (themeToDisplay) {
-          /*
-          logger.info('theme: ', themeToDisplay);
-          logger.info('type: ', type);
-          logger.info('themeFamily: ', themeFamily);
-          logger.info('themeFamilyId: ', themeFamilyId);
-          */
+    return result;
+  }, [allThemes]); // or [] if allThemes is static
 
-          temp.push(themeToDisplay.label);
-        }
-      });
-    }
-  });
-
-  const [newLocalizedStrings] = useLocalizedStrings(useMemo(() => temp, []));
-  const [localizedStrings] = useLocalizedStrings(useMemo(() => LOCALIZED_STRINGS, []));
-
-  logger.info('temp: ', temp);
-  logger.info('LOCALIZED_STRINGS: ', LOCALIZED_STRINGS);
+  const [localizedStrings] = useLocalizedStrings(localizedKeys);
 
   logger.info('localizedStrings: ', localizedStrings);
-  logger.info('newLocalizedStrings: ', newLocalizedStrings);
 
   const [shouldMatchSystemPossiblyError, setShouldMatchSystem, isLoadingShouldMatchSystem] =
     useData<typeof papi.themes.dataProviderName>(themeDataProvider).ShouldMatchSystem(
