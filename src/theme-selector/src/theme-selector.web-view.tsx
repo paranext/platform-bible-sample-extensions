@@ -30,8 +30,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   // eslint-disable-next-line no-type-assertion/no-type-assertion
   const titleKey = (title ?? '') as LocalizeKey;
 
-  logger.info('titleKey: ', titleKey);
-
   const [
     {
       [titleKey]: titleLocalized,
@@ -41,8 +39,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     // ENHANCEMENT: Localize theme labels
     useMemo(() => [titleKey, '%themeSelector_toggle_shouldMatchSystem_label%'], [titleKey]),
   );
-
-  logger.info('titleLocalized: ', titleLocalized);
 
   const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
 
@@ -79,7 +75,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
 
   const [localizedStrings] = useLocalizedStrings(localizedKeys);
 
-  logger.info('localizedStrings: ', localizedStrings);
+  //logger.info('allThemes: ', allThemes);
 
   const [shouldMatchSystemPossiblyError, setShouldMatchSystem, isLoadingShouldMatchSystem] =
     useData<typeof papi.themes.dataProviderName>(themeDataProvider).ShouldMatchSystem(
@@ -133,10 +129,8 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
               >
                 {localizedStrings[themeToDisplay.label]}
                 {themeToDisplay !== undefined &&
-                themeFamilyId.indexOf('-') !== -1 &&
-                themeFamilyId.substring(themeFamilyId.indexOf('-'))
-                  ? ' ' +
-                    themeFamilyId.substring(themeFamilyId.indexOf('-') + 1, themeFamilyId.length)
+                themeFamilyId.indexOf(papi.themes.USER_THEME_FAMILY_PREFIX) === 0
+                  ? ' ' + themeFamilyId.substring(papi.themes.USER_THEME_FAMILY_PREFIX.length)
                   : ''}
               </Button>
             ))}
