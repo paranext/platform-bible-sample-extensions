@@ -1,6 +1,7 @@
 import { WebViewProps } from '@papi/core';
 import papi, { logger } from '@papi/frontend';
 import { useData, useDataProvider, useLocalizedStrings } from '@papi/frontend/react';
+import { useState, useEffect } from 'react';
 
 import {
   getErrorMessage,
@@ -11,6 +12,8 @@ import {
 } from 'platform-bible-utils';
 import { useMemo } from 'react';
 import { Button, Checkbox } from 'platform-bible-react';
+
+import { ContextMenu } from './types/styles';
 
 /** Placeholder theme to detect when we are loading */
 const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
@@ -26,6 +29,19 @@ const DEFAULT_ALL_THEMES: ThemeFamiliesByIdExpanded = {};
 const DEFAULT_SHOULD_MATCH_SYSTEM = true;
 
 globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
+  const [clicked, setClicked] = useState(false);
+  const [points, setPoints] = useState({
+    x: 0,
+    y: 0,
+  });
+  useEffect(() => {
+    const handleClick = () => setClicked(false);
+    window.addEventListener('click', handleClick);
+    return () => {
+      window.removeEventListener('click', handleClick);
+    };
+  }, []);
+
   // I know this is a LocalizeKey
   // eslint-disable-next-line no-type-assertion/no-type-assertion
   const titleKey = (title ?? '') as LocalizeKey;
@@ -125,6 +141,12 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                     );
                   }
                 }}
+                onContextMenu={(e) => {
+                  e.preventDefault(); // prevent the default behaviour when right clicked
+                  logger.info('Right Click');
+                  setClicked(true);
+                  setPoints({ x: e.pageX, y: e.pageY });
+                }}
                 variant={theme.id === themeToDisplay?.id ? 'outline' : 'default'}
               >
                 {localizedStrings[themeToDisplay.label]}
@@ -136,6 +158,15 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
             ))}
           </div>
         ))}
+        {clicked && (
+          <ContextMenu top={points.y} left={points.x}>
+            <ul>
+              <li>Edit</li>
+              <li>Copy</li>
+              <li>Delete</li>
+            </ul>
+          </ContextMenu>
+        )}
       </div>
       <div>
         {shouldMatchSystemLabel}
