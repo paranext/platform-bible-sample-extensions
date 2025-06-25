@@ -15,6 +15,8 @@ import { Button, Checkbox } from 'platform-bible-react';
 
 import { ContextMenu } from './types/styles';
 
+import Form from './Form';
+
 /** Placeholder theme to detect when we are loading */
 const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
   themeFamilyId: '',
@@ -34,6 +36,8 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     x: 0,
     y: 0,
   });
+  const [showForm, setShowForm] = useState(false);
+
   useEffect(() => {
     const handleClick = () => setClicked(false);
     window.addEventListener('click', handleClick);
@@ -45,6 +49,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   // I know this is a LocalizeKey
   // eslint-disable-next-line no-type-assertion/no-type-assertion
   const titleKey = (title ?? '') as LocalizeKey;
+
+  const handleMenuItemClick = (action: string) => {
+    logger.info(`User selected: ${action}`);
+    setShowForm(true);
+  };
 
   const [
     {
@@ -90,8 +99,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   }, [allThemes]); // or [] if allThemes is static
 
   const [localizedStrings] = useLocalizedStrings(localizedKeys);
-
-  //logger.info('allThemes: ', allThemes);
 
   const [shouldMatchSystemPossiblyError, setShouldMatchSystem, isLoadingShouldMatchSystem] =
     useData<typeof papi.themes.dataProviderName>(themeDataProvider).ShouldMatchSystem(
@@ -161,11 +168,14 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
         {clicked && (
           <ContextMenu top={points.y} left={points.x}>
             <ul>
-              <li>Edit</li>
-              <li>Copy</li>
-              <li>Delete</li>
+              <li style={{ background: 'green', padding: 20 } onClick={() => handleMenuItemClick('Edit')}>Edit</li>
             </ul>
           </ContextMenu>
+        )}
+        {showForm && (
+          <div style={{ background: 'yellow', padding: 20 }}>
+            <Form />
+          </div>
         )}
       </div>
       <div>
