@@ -15,7 +15,7 @@ import { Button, Checkbox } from 'platform-bible-react';
 
 import { ContextMenu } from './types/styles';
 
-import Form from './Form';
+import MaterialDialog from './theme-selector.dialog';
 
 /** Placeholder theme to detect when we are loading */
 const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
@@ -168,15 +168,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
         {clicked && (
           <ContextMenu top={points.y} left={points.x}>
             <ul>
-              <li style={{ background: 'green', padding: 20 } onClick={() => handleMenuItemClick('Edit')}>Edit</li>
+              <li onClick={() => handleMenuItemClick('Edit')}>Edit</li>
             </ul>
           </ContextMenu>
         )}
-        {showForm && (
-          <div style={{ background: 'yellow', padding: 20 }}>
-            <Form />
-          </div>
-        )}
+        {showForm && <div style={{ background: 'yellow', padding: 20 }}></div>}
       </div>
       <div>
         {shouldMatchSystemLabel}
