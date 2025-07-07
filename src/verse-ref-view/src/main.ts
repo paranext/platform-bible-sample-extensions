@@ -71,7 +71,7 @@ const verseRefWebViewProvider: IWebViewProvider = {
 };
 
 export async function activate(context: ExecutionActivationContext): Promise<void> {
-  logger.info('verse-ref-view is activating!');
+  logger.debug('verse-ref-view is activating!');
 
   const openVerseRefViewPromise = papi.commands.registerCommand(
     'verseRefView.open',
@@ -86,10 +86,10 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
   // Await the registration promises at the end so we don't hold everything else up
   context.registrations.add(await verseRefWebViewProviderPromise, await openVerseRefViewPromise);
 
-  logger.info('verse-ref-view is finished activating!');
+  logger.debug('verse-ref-view is finished activating!');
 }
 
 export async function deactivate() {
-  logger.info('verse-ref-view is deactivating!');
+  logger.debug('verse-ref-view is deactivating!');
   return true;
 }
