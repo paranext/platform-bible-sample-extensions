@@ -1,5 +1,6 @@
 Includes:
 
+- Create Process Test Extension
 - Theme Selector Extension
 - Verse Ref View Extension
 - Website Viewer Extension
