@@ -28,7 +28,7 @@ const themeSelectorWebViewProvider: IWebViewProviderWithType = {
 };
 
 export async function activate(context: ExecutionActivationContext) {
-  logger.info('Theme Selector is activating!');
+  logger.debug('Theme Selector is activating!');
 
   const themeSelectorWebViewProviderPromise = papi.webViewProviders.registerWebViewProvider(
     themeSelectorWebViewProvider.webViewType,
@@ -51,6 +51,6 @@ export async function activate(context: ExecutionActivationContext) {
 }
 
 export async function deactivate() {
-  logger.info('Theme Selector is deactivating!');
+  logger.debug('Theme Selector is deactivating!');
   return true;
 }
