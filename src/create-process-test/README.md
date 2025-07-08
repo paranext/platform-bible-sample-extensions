@@ -2,7 +2,7 @@
 
 Test extension for Platform.Bible that runs a separate process to test executing a process in various environments.
 
-<!-- <!-- Opening comment tag for Template Info Section. Ignore this for now. More info in [Hide Template Info](#hide-template-info). -->
+<!-- Opening comment tag for Template Info Section. Ignore this for now. More info in [Hide Template Info](#hide-template-info).
 
 ## Template Info
 
