@@ -9,12 +9,12 @@ export async function activate(context: ExecutionActivationContext) {
 
   const isWindows = context.elevatedPrivileges.createProcess.osData.platform.startsWith('win');
 
-  const commandToExecute = isWindows ? 'cmd.exe' : 'bash';
+  const pathToFile = `assets${isWindows ? '\\' : '/'}hello-process.bat`;
+
+  const commandToExecute = isWindows ? 'cmd.exe' : pathToFile;
 
   // Note: This has to be a `.bat` file because `cmd` doesn't run `.sh` files, but `bash` can run `.bat` files.
-  const commandArgs = [`assets${isWindows ? '\\' : '/'}hello-process.bat`];
-
-  if (isWindows) commandArgs.unshift('/c'); // For Windows, we need to use /c to run the command in cmd.exe
+  const commandArgs = isWindows ? ['/c', `assets${isWindows ? '\\' : '/'}hello-process.bat`] : [];
 
   const helloProcess = context.elevatedPrivileges.createProcess.spawn(
     context.executionToken,
