@@ -1,0 +1,12 @@
+{
+  "icon": "",
+  "moreInfoUrl": "",
+  "supportUrl": "",
+  "localizedDisplayInfo": {
+    "en": {
+      "displayName": "Create Process Test",
+      "shortSummary": "Test extension that runs a separate process.",
+      "description": "assets/descriptions/description-en.md"
+    }
+  }
+}
