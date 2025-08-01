@@ -13,10 +13,6 @@ import {
 import { useMemo } from 'react';
 import { Button, Checkbox } from 'platform-bible-react';
 
-import { ContextMenu } from './types/styles';
-
-import MaterialDialog from './theme-selector.dialog';
-
 /** Placeholder theme to detect when we are loading */
 const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
   themeFamilyId: '',
@@ -37,6 +33,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     y: 0,
   });
   const [showForm, setShowForm] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeDefinitionExpanded | null>(undefined);
+  const [selectedCssVariable, setSelectedCssVariable] = useState<{
+    key: string;
+    value: string;
+  } | null>(null);
 
   useEffect(() => {
     const handleClick = () => setClicked(false);
@@ -49,6 +50,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   // I know this is a LocalizeKey
   // eslint-disable-next-line no-type-assertion/no-type-assertion
   const titleKey = (title ?? '') as LocalizeKey;
+  var themeSelectedLabel;
 
   const handleMenuItemClick = (action: string) => {
     logger.info(`User selected: ${action}`);
@@ -129,6 +131,22 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     return papi.themes.getCurrentThemeSync();
   }, [themePossiblyError]);
 
+  const handleCssVariableClick = (key: string, value: string) => {
+    logger.info(`CSS Variable clicked: ${key} = ${value}`);
+    // Add your logic here — e.g., open a form, copy to clipboard, etc.
+    setSelectedCssVariable({ key, value });
+  };
+  const resolveCssVariable = (cssVar: string): string => {
+    // If it's a CSS variable like "var(--something)"
+    if (cssVar.startsWith('var(')) {
+      const match = cssVar.match(/var\((--[^)]+)\)/);
+      if (match) {
+        return getComputedStyle(document.documentElement).getPropertyValue(match[1]).trim();
+      }
+    }
+    return cssVar; // Fallback to raw value (e.g., #3366ff)
+  };
+
   return (
     <div>
       <div>{titleLocalized}</div>
@@ -142,6 +160,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 onClick={() => {
                   try {
                     setCurrentTheme?.({ themeFamilyId, type });
+                    logger.info('themeToDisplay: ', themeToDisplay);
+                    themeSelectedLabel = themeToDisplay.label;
+                    setSelectedTheme(themeToDisplay); // 👈 Set selected theme here
+                    setSelectedCssVariable(null); // ✅ Reset preview
+                    logger.info(themeToDisplay?.cssVariables);
                   } catch (e) {
                     logger.warn(
                       `Failed to set theme to ${themeFamilyId} ${type}: ${getErrorMessage(e)}`,
@@ -150,7 +173,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 }}
                 onContextMenu={(e) => {
                   e.preventDefault(); // prevent the default behaviour when right clicked
-                  logger.info('Right Click');
+                  logger.info('Right Click: x - ', e.pageX, 'y - ', e.pageY);
                   setClicked(true);
                   setPoints({ x: e.pageX, y: e.pageY });
                 }}
@@ -165,14 +188,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
             ))}
           </div>
         ))}
-        {clicked && (
-          <ContextMenu top={points.y} left={points.x}>
-            <ul>
-              <li onClick={() => handleMenuItemClick('Edit')}>Edit</li>
-            </ul>
-          </ContextMenu>
-        )}
-        {showForm && <div style={{ background: 'yellow', padding: 20 }}></div>}
       </div>
       <div>
         {shouldMatchSystemLabel}
@@ -184,6 +199,53 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
           }}
         />
       </div>
+      {selectedTheme && (
+        <div style={{ marginTop: '1rem' }}>
+          <h3>CSS Variables for {localizedStrings[selectedTheme.label]}</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {Object.entries(selectedTheme.cssVariables).map(([key, value]) => {
+              const resolved = resolveCssVariable(value);
+
+              return (
+                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      backgroundColor: resolved,
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      flexShrink: 0,
+                    }}
+                    title={resolved}
+                  />
+                  <Button variant="outline" onClick={() => handleCssVariableClick(key, value)}>
+                    {key}
+                  </Button>
+                  <span style={{ fontFamily: 'monospace', color: '#666' }}>{resolved}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {/* ✅ Display Color Preview */}
+      {selectedCssVariable && (
+        <div style={{ marginTop: '1rem' }}>
+          <h4>
+            {selectedCssVariable.key}: {selectedCssVariable.value}
+          </h4>
+          <div
+            style={{
+              width: '100px',
+              height: '40px',
+              backgroundColor: selectedCssVariable.value,
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };
