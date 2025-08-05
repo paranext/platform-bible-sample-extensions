@@ -37,6 +37,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   } | null>(null);
 
   useEffect(() => {
+    console.log('ThemeSelector mounted');
+    return () => console.log('ThemeSelector unmounted');
+  }, []);
+
+  useEffect(() => {
     const handleClick = () => setClicked(false);
     window.addEventListener('click', handleClick);
     return () => window.removeEventListener('click', handleClick);
