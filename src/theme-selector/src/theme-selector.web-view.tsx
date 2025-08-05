@@ -2,7 +2,7 @@ import { WebViewProps } from '@papi/core';
 import papi, { logger } from '@papi/frontend';
 import { useData, useDataProvider, useLocalizedStrings } from '@papi/frontend/react';
 import { useState, useEffect } from 'react';
-
+import { Button, Checkbox } from 'platform-bible-react';
 import {
   getErrorMessage,
   isPlatformError,
@@ -11,7 +11,6 @@ import {
   ThemeFamiliesByIdExpanded,
 } from 'platform-bible-utils';
 import { useMemo } from 'react';
-import { Button, Checkbox } from 'platform-bible-react';
 
 /** Placeholder theme to detect when we are loading */
 const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
@@ -35,6 +34,24 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     key: string;
     value: string;
   } | null>(null);
+  const [popoverColor, setPopoverColor] = useState<string | null>(null);
+  const [popoverPosition, setPopoverPosition] = useState<{ x: number; y: number } | null>(null);
+  const [hue, setHue] = useState<number | null>(null);
+  const [saturation, setSaturation] = useState<number | null>(null);
+  const [lightness, setLightness] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (popoverColor?.startsWith('hsl')) {
+      const hslRegex = /hsl\(\s*([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/;
+      const match = popoverColor.match(hslRegex);
+      if (match) {
+        const [, h, s, l] = match;
+        setHue(parseFloat(h));
+        setSaturation(parseFloat(s));
+        setLightness(parseFloat(l));
+      }
+    }
+  }, [popoverColor]);
 
   useEffect(() => {
     console.log('ThemeSelector mounted');
@@ -42,7 +59,10 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   }, []);
 
   useEffect(() => {
-    const handleClick = () => setClicked(false);
+    const handleClick = () => {
+      setClicked(false);
+      setPopoverColor(null); // Close popover on global click
+    };
     window.addEventListener('click', handleClick);
     return () => window.removeEventListener('click', handleClick);
   }, []);
@@ -60,13 +80,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
       '%themeSelector_toggle_shouldMatchSystem_label%': shouldMatchSystemLabel,
     },
   ] = useLocalizedStrings(
-    // ENHANCEMENT: Localize theme labels
     useMemo(() => [titleKey, '%themeSelector_toggle_shouldMatchSystem_label%'], [titleKey]),
   );
 
   const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
 
-  // ENHANCEMENT: update user-defined themes. Can pull `setAllThemes` from here
   const [allThemesPossiblyError] = useData<typeof papi.themes.dataProviderName>(
     themeDataProvider,
   ).AllThemes(undefined, DEFAULT_ALL_THEMES);
@@ -83,7 +101,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
 
   const localizedKeys = useMemo(() => {
     const result: LocalizeKey[] = [];
-
     Object.entries(allThemes).forEach(([themeFamilyId, themeFamily]) => {
       if (themeFamily) {
         Object.entries(themeFamily).forEach(([type, themeToDisplay]) => {
@@ -93,9 +110,8 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
         });
       }
     });
-
     return result;
-  }, [allThemes]); // or [] if allThemes is static
+  }, [allThemes]);
 
   const [localizedStrings] = useLocalizedStrings(localizedKeys);
 
@@ -119,32 +135,23 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     themeDataProvider,
   ).CurrentTheme(undefined, DEFAULT_THEME_VALUE);
 
-  /** Get the theme on first load so we can show the right symbol on the toolbar */
   const theme = useMemo(() => {
-    // Warn if the theme came back as a PlatformError. Will handle the PlatformError elsewhere too
     if (isPlatformError(themePossiblyError))
       logger.warn(`Error getting theme for toolbar button. ${getErrorMessage(theme)}`);
-
     return papi.themes.getCurrentThemeSync();
   }, [themePossiblyError]);
 
-  // resolveCssVariable function updated slightly:
   const resolveCssVariable = (cssVar: string, element: HTMLElement = document.body): string => {
-    // If it's already HSL, wrap it
     const hslMatch = cssVar.match(/^([\d.]+)\s+([\d.]+%)\s+([\d.]+%)$/);
     if (hslMatch) {
       const [, h, s, l] = hslMatch;
       return `hsl(${h}, ${s}, ${l})`;
     }
-
-    // If it's already RGB
     const rgbMatch = cssVar.match(/^(\d{1,3})\s*,?\s*(\d{1,3})\s*,?\s*(\d{1,3})$/);
     if (rgbMatch) {
       const [, r, g, b] = rgbMatch;
       return `rgb(${r}, ${g}, ${b})`;
     }
-
-    // If it’s a real CSS variable (like var(--foo)), resolve it
     if (cssVar.startsWith('var(')) {
       const match = cssVar.match(/var\((--[^),\s]+)(?:,[^)]+)?\)/);
       if (match) {
@@ -153,8 +160,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
         return value || cssVar;
       }
     }
-
-    // Otherwise just return it as-is
     return cssVar;
   };
 
@@ -162,6 +167,14 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     const resolved = resolveCssVariable(value);
     logger.info(`Clicked CSS Variable: ${key} = ${value}, resolved to: ${resolved}`);
     setSelectedCssVariable({ key, value });
+  };
+
+  const handleSwatchClick = (value: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent global click handler from closing popover
+    const resolved = resolveCssVariable(value);
+    setPopoverColor(resolved);
+    setPopoverPosition({ x: event.clientX, y: event.clientY });
+    setSelectedCssVariable(null); // Clear selected variable to avoid conflict
   };
 
   return (
@@ -193,6 +206,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                       logger.info('themeToDisplay: ', themeToDisplay);
                       setSelectedTheme(themeToDisplay);
                       setSelectedCssVariable(null);
+                      setPopoverColor(null); // Close popover on theme change
                       logger.info(themeToDisplay.cssVariables);
                     } catch (e) {
                       logger.warn(
@@ -240,9 +254,15 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
               CSS Variables for{' '}
               <span style={{ color: '#333' }}>
                 {localizedStrings[selectedTheme.label] || selectedTheme.label || '(unknown theme)'}
+                {selectedTheme &&
+                selectedTheme.themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)
+                  ? ' ' +
+                    selectedTheme.themeFamilyId.substring(
+                      papi.themes.USER_THEME_FAMILY_PREFIX.length,
+                    )
+                  : ''}
               </span>
             </h3>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {Object.entries(selectedTheme.cssVariables).map(([key, value]) => {
                 const resolved = resolveCssVariable(value);
@@ -261,7 +281,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                       backgroundColor: '#fff',
                     }}
                   >
-                    <div
+                    <Button
                       style={{
                         width: '20px',
                         height: '20px',
@@ -269,12 +289,25 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                         border: '1px solid #999',
                         borderRadius: '4px',
                         flexShrink: 0,
+                        padding: 0,
                       }}
                       title={swatchColor}
+                      onClick={(e) => handleSwatchClick(value, e)}
                     />
-                    <Button variant="outline" onClick={() => handleCssVariableClick(key, value)}>
-                      {key}
-                    </Button>
+                    <input
+                      type="text"
+                      value={key}
+                      readOnly
+                      style={{
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        padding: '0.25rem',
+                        fontFamily: 'monospace',
+                        color: '#333',
+                        backgroundColor: '#f5f5f5',
+                        cursor: 'default',
+                      }}
+                    />
                     <span style={{ fontFamily: 'monospace', color: '#666' }}>{resolved}</span>
                   </div>
                 );
@@ -282,7 +315,77 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
             </div>
           </div>
         )}
+      {popoverColor && popoverPosition && (
+        <div
+          style={{
+            position: 'fixed',
+            top: popoverPosition.y + 10,
+            left: popoverPosition.x + 10,
+            background: '#fff',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            padding: '0.5rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              width: '100px',
+              height: '50px',
+              backgroundColor: `hsl(${hue ?? 0}, ${saturation ?? 0}%, ${lightness ?? 0}%)`,
+              border: '1px solid #999',
+              borderRadius: '4px',
+              marginBottom: '0.5rem',
+            }}
+          />
+          <div style={{ fontFamily: 'monospace', color: '#333', marginBottom: '0.5rem' }}>
+            hsl({hue}, {saturation}%, {lightness}%)
+          </div>
 
+          {hue !== null && (
+            <label style={{ display: 'block', marginBottom: '0.25rem' }}>
+              Hue: {hue}
+              <input
+                type="range"
+                min={0}
+                max={360}
+                value={hue}
+                onChange={(e) => setHue(Number(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </label>
+          )}
+
+          {saturation !== null && (
+            <label style={{ display: 'block', marginBottom: '0.25rem' }}>
+              Saturation: {saturation}%
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={saturation}
+                onChange={(e) => setSaturation(Number(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </label>
+          )}
+
+          {lightness !== null && (
+            <label style={{ display: 'block' }}>
+              Lightness: {lightness}%
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={lightness}
+                onChange={(e) => setLightness(Number(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </label>
+          )}
+        </div>
+      )}
       {selectedCssVariable && (
         <div
           style={{
@@ -297,7 +400,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
             {selectedCssVariable.key}:{' '}
             <span style={{ fontFamily: 'monospace' }}>{selectedCssVariable.value}</span>
           </h4>
-
           <div
             style={{
               width: '100px',
@@ -309,7 +411,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
             }}
             title={resolveCssVariable(selectedCssVariable.value)}
           />
-
           <div style={{ color: '#666', fontFamily: 'monospace' }}>
             Resolved: {resolveCssVariable(selectedCssVariable.value)}
           </div>
