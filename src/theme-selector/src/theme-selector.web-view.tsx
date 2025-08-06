@@ -174,9 +174,27 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     const resolved = resolveCssVariable(value);
     setPopoverColor(resolved);
     setPopoverPosition({ x: event.clientX, y: event.clientY });
-    setSelectedCssVariable(null); // Clear selected variable to avoid conflict
   };
-
+  // Sync selectedTheme with papi.themes
+  useEffect(() => {
+    if (selectedTheme && setCurrentTheme) {
+      try {
+        setCurrentTheme({
+          themeFamilyId: selectedTheme.themeFamilyId,
+          type: selectedTheme.type,
+        });
+        papi.themes
+          .setTheme({
+            ...selectedTheme,
+            cssVariables: selectedTheme.cssVariables,
+          })
+          .catch((e) => logger.warn(`Failed to apply updated theme: ${getErrorMessage(e)}`));
+      } catch (e) {
+        logger.warn(`Failed to set theme: ${getErrorMessage(e)}`);
+      }
+    }
+  }, [selectedTheme, setCurrentTheme]);
+  
   return (
     <div>
       <div>{titleLocalized}</div>
@@ -292,7 +310,10 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                         padding: 0,
                       }}
                       title={swatchColor}
-                      onClick={(e) => handleSwatchClick(value, e)}
+                      onClick={(e) => {
+                        handleCssVariableClick(key, value); // Call handleCssVariableClick
+                        handleSwatchClick(value, e); // Call handleSwatchClick
+                      }}
                     />
                     <input
                       type="text"
@@ -351,7 +372,26 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 min={0}
                 max={360}
                 value={hue}
-                onChange={(e) => setHue(Number(e.target.value))}
+                onChange={(e) => {
+                  const newHue = Number(e.target.value);
+                  setHue(newHue);
+                  if (selectedCssVariable) {
+                    const newHsl = `hsl(${newHue}, ${saturation ?? 0}%, ${lightness ?? 0}%)`;
+                    setSelectedCssVariable({
+                      key: selectedCssVariable.key,
+                      value: newHsl,
+                    });
+                    if (selectedTheme) {
+                      setSelectedTheme({
+                        ...selectedTheme,
+                        cssVariables: {
+                          ...selectedTheme.cssVariables,
+                          [selectedCssVariable.key]: newHsl,
+                        },
+                      });
+                    }
+                  }
+                }}
                 style={{ width: '100%' }}
               />
             </label>
@@ -365,7 +405,26 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 min={0}
                 max={100}
                 value={saturation}
-                onChange={(e) => setSaturation(Number(e.target.value))}
+                onChange={(e) => {
+                  const newSaturation = Number(e.target.value);
+                  setSaturation(newSaturation);
+                  if (selectedCssVariable) {
+                    const newHsl = `hsl(${hue ?? 0}, ${newSaturation}%, ${lightness ?? 0}%)`;
+                    setSelectedCssVariable({
+                      key: selectedCssVariable.key,
+                      value: newHsl,
+                    });
+                    if (selectedTheme) {
+                      setSelectedTheme({
+                        ...selectedTheme,
+                        cssVariables: {
+                          ...selectedTheme.cssVariables,
+                          [selectedCssVariable.key]: newHsl,
+                        },
+                      });
+                    }
+                  }
+                }}
                 style={{ width: '100%' }}
               />
             </label>
@@ -379,7 +438,26 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 min={0}
                 max={100}
                 value={lightness}
-                onChange={(e) => setLightness(Number(e.target.value))}
+                onChange={(e) => {
+                  const newLightness = Number(e.target.value);
+                  setLightness(newLightness);
+                  if (selectedCssVariable) {
+                    const newHsl = `hsl(${hue ?? 0}, ${saturation ?? 0}%, ${newLightness}%)`;
+                    setSelectedCssVariable({
+                      key: selectedCssVariable.key,
+                      value: newHsl,
+                    });
+                    if (selectedTheme) {
+                      setSelectedTheme({
+                        ...selectedTheme,
+                        cssVariables: {
+                          ...selectedTheme.cssVariables,
+                          [selectedCssVariable.key]: newHsl,
+                        },
+                      });
+                    }
+                  }
+                }}
                 style={{ width: '100%' }}
               />
             </label>
