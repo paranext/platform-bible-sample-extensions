@@ -142,16 +142,28 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   }, [themePossiblyError]);
 
   const resolveCssVariable = (cssVar: string, element: HTMLElement = document.body): string => {
+    // Handle hsl(h, s%, l%) format
+    const hslFullMatch = cssVar.match(/^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/);
+    if (hslFullMatch) {
+      const [, h, s, l] = hslFullMatch;
+      return `hsl(${h}, ${s}%, ${l}%)`;
+    }
+
+    // Handle space-separated HSL (e.g., 360 50% 50%)
     const hslMatch = cssVar.match(/^([\d.]+)\s+([\d.]+%)\s+([\d.]+%)$/);
     if (hslMatch) {
       const [, h, s, l] = hslMatch;
       return `hsl(${h}, ${s}, ${l})`;
     }
+
+    // Handle RGB format
     const rgbMatch = cssVar.match(/^(\d{1,3})\s*,?\s*(\d{1,3})\s*,?\s*(\d{1,3})$/);
     if (rgbMatch) {
       const [, r, g, b] = rgbMatch;
       return `rgb(${r}, ${g}, ${b})`;
     }
+
+    // Handle CSS variables
     if (cssVar.startsWith('var(')) {
       const match = cssVar.match(/var\((--[^),\s]+)(?:,[^)]+)?\)/);
       if (match) {
@@ -160,6 +172,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
         return value || cssVar;
       }
     }
+
     return cssVar;
   };
 
@@ -194,7 +207,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
       }
     }
   }, [selectedTheme, setCurrentTheme]);
-  
+
   return (
     <div>
       <div>{titleLocalized}</div>
@@ -283,8 +296,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {Object.entries(selectedTheme.cssVariables).map(([key, value]) => {
-                const resolved = resolveCssVariable(value);
-                const swatchColor = resolved && resolved !== value ? resolved : '#ccc';
+                const swatchColor = resolveCssVariable(value);
 
                 return (
                   <div
@@ -329,7 +341,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                         cursor: 'default',
                       }}
                     />
-                    <span style={{ fontFamily: 'monospace', color: '#666' }}>{resolved}</span>
+                    <span style={{ fontFamily: 'monospace', color: '#666' }}>{swatchColor}</span>
                   </div>
                 );
               })}
