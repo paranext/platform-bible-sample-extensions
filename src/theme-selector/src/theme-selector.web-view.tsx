@@ -9,6 +9,7 @@ import {
   LocalizeKey,
   ThemeDefinitionExpanded,
   ThemeFamiliesByIdExpanded,
+  ThemeFamiliesById,
 } from 'platform-bible-utils';
 import { useMemo } from 'react';
 
@@ -40,6 +41,12 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   const [saturation, setSaturation] = useState<number | null>(null);
   const [lightness, setLightness] = useState<number | null>(null);
 
+  const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
+
+  const [allThemesPossiblyError, setAllThemes] = useData<typeof papi.themes.dataProviderName>(
+    themeDataProvider,
+  ).AllThemes(undefined, DEFAULT_ALL_THEMES);
+
   useEffect(() => {
     if (popoverColor?.startsWith('hsl')) {
       const hslRegex = /hsl\(\s*([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/;
@@ -69,11 +76,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
 
   const titleKey = (title ?? '') as LocalizeKey;
 
-  const handleMenuItemClick = (action: string) => {
-    logger.info(`User selected: ${action}`);
-    setShowForm(true);
-  };
-
   const [
     {
       [titleKey]: titleLocalized,
@@ -82,12 +84,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   ] = useLocalizedStrings(
     useMemo(() => [titleKey, '%themeSelector_toggle_shouldMatchSystem_label%'], [titleKey]),
   );
-
-  const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
-
-  const [allThemesPossiblyError] = useData<typeof papi.themes.dataProviderName>(
-    themeDataProvider,
-  ).AllThemes(undefined, DEFAULT_ALL_THEMES);
 
   const allThemes = useMemo(() => {
     if (isPlatformError(allThemesPossiblyError)) {
@@ -188,6 +184,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     setPopoverColor(resolved);
     setPopoverPosition({ x: event.clientX, y: event.clientY });
   };
+
   // Sync selectedTheme with papi.themes
   useEffect(() => {
     if (selectedTheme && setCurrentTheme) {
@@ -196,12 +193,17 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
           themeFamilyId: selectedTheme.themeFamilyId,
           type: selectedTheme.type,
         });
-        papi.themes
-          .setTheme({
-            ...selectedTheme,
-            cssVariables: selectedTheme.cssVariables,
-          })
-          .catch((e) => logger.warn(`Failed to apply updated theme: ${getErrorMessage(e)}`));
+
+        const themeFamiliesById: ThemeFamiliesById = {
+          [selectedTheme.themeFamilyId]: {
+            [selectedTheme.type]: {
+              label: `%${selectedTheme.themeFamilyId}.${selectedTheme.type}%`,
+              cssVariables: selectedTheme.cssVariables,
+            },
+          },
+        };
+
+        papi.themes.setAllThemes(themeFamiliesById);
       } catch (e) {
         logger.warn(`Failed to set theme: ${getErrorMessage(e)}`);
       }
