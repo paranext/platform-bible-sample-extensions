@@ -11,7 +11,7 @@ import {
   ThemeFamiliesByIdExpanded,
   ThemeFamiliesById,
 } from 'platform-bible-utils';
-import { debounce } from 'lodash';
+import { getLuminance } from 'polished';
 
 const DEFAULT_THEME_VALUE: ThemeDefinitionExpanded = {
   themeFamilyId: '',
@@ -282,62 +282,24 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   }, [selectedTheme]); // 🔹 only run when selectedTheme changes
 
   const getContrastTextColor = (backgroundColor: string): string => {
-    // Fallback to a default color if backgroundColor is invalid
+    // Fallback to black if backgroundColor is invalid
     if (!backgroundColor) return '#000';
 
-    // Handle CSS variables like var(--background-color)
-    let resolvedColor = backgroundColor;
-    if (backgroundColor.startsWith('var(')) {
-      const match = backgroundColor.match(/var\((--[^),\s]+)(?:,[^)]+)?\)/);
-      if (match) {
-        const varName = match[1];
-        resolvedColor = getComputedStyle(document.body).getPropertyValue(varName).trim();
-      }
-    }
+    // Resolve CSS variables or color values using your existing function
+    const resolvedColor = resolveCssVariable(backgroundColor);
 
-    // Parse color (supports hex, rgb, hsl)
-    let r = 0,
-      g = 0,
-      b = 0;
-    if (resolvedColor.startsWith('#')) {
-      const hex = resolvedColor.replace('#', '');
-      r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substr(0, 2), 16);
-      g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substr(2, 2), 16);
-      b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substr(4, 2), 16);
-    } else if (resolvedColor.startsWith('rgb')) {
-      const match = resolvedColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-      if (match) {
-        r = parseInt(match[1], 10);
-        g = parseInt(match[2], 10);
-        b = parseInt(match[3], 10);
-      }
-    } else if (resolvedColor.startsWith('hsl')) {
-      const match = resolvedColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-      if (match) {
-        // Convert HSL to RGB for luminance calculation (simplified)
-        const h = parseInt(match[1], 10) / 360;
-        const s = parseInt(match[2], 10) / 100;
-        const l = parseInt(match[3], 10) / 100;
-        const c = (1 - Math.abs(2 * l - 1)) * s;
-        const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
-        const m = l - c / 2;
-        let rgb;
-        if (h < 1 / 6) rgb = [c, x, 0];
-        else if (h < 2 / 6) rgb = [x, c, 0];
-        else if (h < 3 / 6) rgb = [0, c, x];
-        else if (h < 4 / 6) rgb = [0, x, c];
-        else if (h < 5 / 6) rgb = [x, 0, c];
-        else rgb = [c, 0, x];
-        r = Math.round((rgb[0] + m) * 255);
-        g = Math.round((rgb[1] + m) * 255);
-        b = Math.round((rgb[2] + m) * 255);
-      }
-    }
+    try {
+      // Calculate luminance using polished
+      const luminance = getLuminance(resolvedColor);
 
-    // Calculate relative luminance (WCAG formula)
-    const luminance = 0.2126 * (r / 255) + 0.7152 * (g / 255) + 0.0722 * (b / 255);
-    // Return black for light backgrounds, white for dark backgrounds
-    return luminance > 0.5 ? '#000' : '#fff';
+      // Return black for light backgrounds (luminance > 0.5), white for dark backgrounds
+      return luminance > 0.5 ? '#000' : '#fff';
+    } catch (e) {
+      logger.warn(
+        `Failed to calculate luminance for color ${resolvedColor}: ${getErrorMessage(e)}`,
+      );
+      return '#000'; // Fallback to black on error
+    }
   };
 
   return (
