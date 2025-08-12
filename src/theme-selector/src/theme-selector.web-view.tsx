@@ -45,9 +45,6 @@ class ErrorBoundary extends Component<{ children: ReactNode }> {
 }
 
 globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
-  const [clicked, setClicked] = useState(false);
-  const [points, setPoints] = useState({ x: 0, y: 0 });
-  const [showForm, setShowForm] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<ThemeDefinitionExpanded | null>(null);
   const [selectedCssVariable, setSelectedCssVariable] = useState<{
     key: string;
@@ -61,6 +58,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
 
   const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
 
+  // custom hook to get access to the theme data provider's setAllThemes function
   const [allThemesPossiblyError, setAllThemes] = useData<typeof papi.themes.dataProviderName>(
     themeDataProvider,
   ).AllThemes(undefined, DEFAULT_ALL_THEMES);
@@ -71,6 +69,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     setterType: typeof setAllThemes,
   });
 
+  // re-run the function when its dependencies change
   useEffect(() => {
     if (popoverColor?.startsWith('hsl')) {
       const hslRegex = /hsl\(\s*([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/;
@@ -84,14 +83,15 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     }
   }, [popoverColor]);
 
+  // re-run the function when its dependencies change
   useEffect(() => {
     console.log('ThemeSelector mounted');
     return () => console.log('ThemeSelector unmounted');
   }, []);
 
+  // re-run the function when its dependencies change
   useEffect(() => {
     const handleClick = () => {
-      setClicked(false);
       setPopoverColor(null);
     };
     window.addEventListener('click', handleClick);
@@ -109,6 +109,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     useMemo(() => [titleKey, '%themeSelector_toggle_shouldMatchSystem_label%'], [titleKey]),
   );
 
+  // caches or memoizes the "allThemes" variable
   const allThemes = useMemo(() => {
     console.log('allThemesPossiblyError:', allThemesPossiblyError);
     if (allThemesPossiblyError === undefined || allThemesPossiblyError === null) {
@@ -126,13 +127,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     return allThemesPossiblyError;
   }, [allThemesPossiblyError]);
 
-  const [localAllThemes, setLocalAllThemes] = useState<ThemeFamiliesById>(DEFAULT_ALL_THEMES);
-
-  // keep it in sync when provider loads
-  useEffect(() => {
-    if (allThemes && !isPlatformError(allThemes)) setLocalAllThemes(allThemes);
-  }, [allThemes]);
-
+  // caches, or memoizes, the localized keys variable
   const localizedKeys = useMemo(() => {
     console.log('Computing localizedKeys:', { allThemes });
     const result: LocalizeKey[] = [];
@@ -150,14 +145,17 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     return result;
   }, [allThemes]);
 
+  // retrieve the localized strings
   const [localizedStrings] = useLocalizedStrings(localizedKeys);
 
+  // custom hook meant to get the ShouldMatchSystem function on the theme data provider
   const [shouldMatchSystemPossiblyError, setShouldMatchSystem, isLoadingShouldMatchSystem] =
     useData<typeof papi.themes.dataProviderName>(themeDataProvider).ShouldMatchSystem(
       undefined,
       DEFAULT_SHOULD_MATCH_SYSTEM,
     );
 
+  // caches the "shouldMatchSystem" variable - memoizes it
   const shouldMatchSystem = useMemo(() => {
     if (isPlatformError(shouldMatchSystemPossiblyError)) {
       logger.warn(
@@ -168,16 +166,19 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     return shouldMatchSystemPossiblyError;
   }, [shouldMatchSystemPossiblyError]);
 
+  // a custom hook meant to get the theme data provider
   const [themePossiblyError, setCurrentTheme] = useData<typeof papi.themes.dataProviderName>(
     themeDataProvider,
   ).CurrentTheme(undefined, DEFAULT_THEME_VALUE);
 
+  // caches the "theme" variable - memoizes it
   const theme = useMemo(() => {
     if (isPlatformError(themePossiblyError))
       logger.warn(`Error getting theme for toolbar button. ${getErrorMessage(theme)}`);
     return papi.themes.getCurrentThemeSync();
   }, [themePossiblyError]);
 
+  // re-runs when the dependencies change
   useEffect(() => {
     if (theme && theme.themeFamilyId && theme.type) {
       const currentThemeFamily = allThemes[theme.themeFamilyId];
@@ -195,7 +196,8 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     }
   }, [theme, allThemes]);
 
-  const resolveCssVariable = (cssVar: string, element: HTMLElement = document.body): string => {
+  // encode the css variable into the appropriate color format
+  const resolveCssVariable = (cssVar: string): string => {
     const hslFullMatch = cssVar.match(/^hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)$/);
     if (hslFullMatch) {
       const [, h, s, l] = hslFullMatch;
@@ -222,12 +224,14 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     return cssVar;
   };
 
+  // callback function - when a css variable is clicked
   const handleCssVariableClick = (key: string, value: string) => {
     const resolved = resolveCssVariable(value);
     logger.info(`Clicked CSS Variable: ${key} = ${value}, resolved to: ${resolved}`);
     setSelectedCssVariable({ key, value });
   };
 
+  // callback function - when a color swatch for a css variable is clicked
   const handleSwatchClick = (value: string, event: React.MouseEvent) => {
     event.stopPropagation();
     const resolved = resolveCssVariable(value);
@@ -235,6 +239,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     setPopoverPosition({ x: event.clientX, y: event.clientY });
   };
 
+  // synchronizes "selectedTheme" with "CurrentTheme" and papi backend AllThemes
   useEffect(() => {
     if (!selectedTheme || !setCurrentTheme) return;
 
@@ -257,10 +262,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
       },
     };
 
-    // Update local provider
-    //setAllThemes?.(updatedAllThemes);
-
-    // Filter only user themes before persisting
+    // Filter out all non-user themes before persisting
     const userThemesOnly: ThemeFamiliesById = {};
     for (const [themeFamilyId, themes] of Object.entries(updatedAllThemes)) {
       if (themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)) {
@@ -268,7 +270,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
       }
     }
 
-    console.log('before setAllThemes - updatedAllThemes: ', userThemesOnly);
     // Persist to backend (debounced or delayed to prevent rapid overwrites)
     const persist = async () => {
       try {
@@ -281,6 +282,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     persist();
   }, [selectedTheme]); // 🔹 only run when selectedTheme changes
 
+  // calculate the text color of the theme buttons using the polished library
   const getContrastTextColor = (backgroundColor: string): string => {
     // Fallback to black if backgroundColor is invalid
     if (!backgroundColor) return '#000';
@@ -321,10 +323,12 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                     : '';
 
                 return (
+                  // 1 button per theme
                   <Button
                     key={`${themeFamilyId}-${type}`}
                     disabled={!setCurrentTheme}
                     onClick={() => {
+                      // callback function for mouse click event
                       try {
                         if (!themeToDisplay) throw new Error('Invalid themeToDisplay');
                         console.log('Setting selectedTheme:', {
@@ -353,8 +357,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                     onContextMenu={(e) => {
                       e.preventDefault();
                       logger.info('Right Click: x - ', e.pageX, 'y - ', e.pageY);
-                      setClicked(true);
-                      setPoints({ x: e.pageX, y: e.pageY });
                     }}
                     variant={isSelected ? 'outline' : 'default'}
                     style={{
@@ -422,6 +424,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 {Object.entries(selectedTheme.cssVariables || {}).map(([key, value]) => {
                   const swatchColor = resolveCssVariable(value);
                   return (
+                    // 1 button (color swatch) for each css variable
                     <div
                       key={key}
                       style={{
@@ -499,6 +502,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
               hsl({hue}, {saturation}%, {lightness}%)
             </div>
             {selectedTheme && hue !== null && (
+              // hue slider
               <label style={{ display: 'block', marginBottom: '0.25rem' }}>
                 Hue: {hue}
                 <input
@@ -541,6 +545,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
               </label>
             )}
             {selectedTheme && saturation !== null && (
+              // saturation slider
               <label style={{ display: 'block', marginBottom: '0.25rem' }}>
                 Saturation: {saturation}%
                 <input
@@ -586,6 +591,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
               </label>
             )}
             {selectedTheme && lightness !== null && (
+              // lightness slider
               <label style={{ display: 'block' }}>
                 Lightness: {lightness}%
                 <input
