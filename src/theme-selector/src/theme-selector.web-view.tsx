@@ -65,21 +65,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     themeDataProvider,
   ).AllThemes(undefined, DEFAULT_ALL_THEMES);
 
-  const debouncedSetAllThemes = useMemo(
-    () =>
-      debounce((themes: ThemeFamiliesById) => {
-        console.log('Calling papi.themes.setAllThemes with:', themes);
-        papi.themes
-          .setAllThemes(themes)
-          .then(() => {
-            console.log('papi.themes.setAllThemes succeeded');
-          })
-          .catch((e) => {
-            logger.error(`Failed to set all themes: ${getErrorMessage(e)}`);
-          });
-      }, 300),
-    [],
-  );
+  console.log('AllThemes hook ->', {
+    allThemesPossiblyError,
+    setAllThemes,
+    setterType: typeof setAllThemes,
+  });
 
   useEffect(() => {
     if (popoverColor?.startsWith('hsl')) {
@@ -135,6 +125,13 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     }
     return allThemesPossiblyError;
   }, [allThemesPossiblyError]);
+
+  const [localAllThemes, setLocalAllThemes] = useState<ThemeFamiliesById>(DEFAULT_ALL_THEMES);
+
+  // keep it in sync when provider loads
+  useEffect(() => {
+    if (allThemes && !isPlatformError(allThemes)) setLocalAllThemes(allThemes);
+  }, [allThemes]);
 
   const localizedKeys = useMemo(() => {
     console.log('Computing localizedKeys:', { allThemes });
@@ -239,52 +236,50 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   };
 
   useEffect(() => {
-    if (selectedTheme && setCurrentTheme) {
-      try {
-        console.log('Syncing selectedTheme:', {
-          selectedTheme,
-          cssVariables: selectedTheme.cssVariables,
-        });
-        setCurrentTheme({
-          themeFamilyId: selectedTheme.themeFamilyId,
-          type: selectedTheme.type,
-        });
+    if (!selectedTheme || !setCurrentTheme) return;
 
-        const currentThemes =
-          allThemesPossiblyError && !isPlatformError(allThemesPossiblyError)
-            ? allThemesPossiblyError
-            : {};
-        const themeFamiliesById: ThemeFamiliesById = {
-          ...currentThemes,
-          [selectedTheme.themeFamilyId]: {
-            ...(currentThemes[selectedTheme.themeFamilyId] || {}),
-            [selectedTheme.type]: {
-              label: `%${selectedTheme.themeFamilyId}.${selectedTheme.type}%`,
-              cssVariables: selectedTheme.cssVariables || {},
-            },
-          },
-        };
+    console.log('Syncing selectedTheme:', selectedTheme);
 
-        setAllThemes((prev) => {
-          console.log('Updating allThemes:', { prev, newTheme: themeFamiliesById });
-          return {
-            ...prev,
-            [selectedTheme.themeFamilyId]: {
-              ...(prev[selectedTheme.themeFamilyId] || {}),
-              [selectedTheme.type]: {
-                label: `%${selectedTheme.themeFamilyId}.${selectedTheme.type}%`,
-                cssVariables: selectedTheme.cssVariables || {},
-              },
-            },
-          };
-        });
+    // Step 1: Local UI update
+    setCurrentTheme({
+      themeFamilyId: selectedTheme.themeFamilyId,
+      type: selectedTheme.type,
+    });
 
-        debouncedSetAllThemes(themeFamiliesById);
-      } catch (e) {
-        logger.warn(`Failed to set theme: ${getErrorMessage(e)}`);
+    const updatedAllThemes: ThemeFamiliesById = {
+      ...(isPlatformError(allThemesPossiblyError) ? {} : allThemesPossiblyError),
+      [selectedTheme.themeFamilyId]: {
+        ...(allThemesPossiblyError?.[selectedTheme.themeFamilyId] || {}),
+        [selectedTheme.type]: {
+          label: `%${selectedTheme.themeFamilyId}.${selectedTheme.type}%`,
+          cssVariables: selectedTheme.cssVariables || {},
+        },
+      },
+    };
+
+    // Update local provider
+    //setAllThemes?.(updatedAllThemes);
+
+    // Filter only user themes before persisting
+    const userThemesOnly: ThemeFamiliesById = {};
+    for (const [themeFamilyId, themes] of Object.entries(updatedAllThemes)) {
+      if (themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)) {
+        userThemesOnly[themeFamilyId] = themes;
       }
     }
-  }, [selectedTheme, setCurrentTheme, debouncedSetAllThemes, allThemesPossiblyError]);
+
+    console.log('before setAllThemes - updatedAllThemes: ', userThemesOnly);
+    // Persist to backend (debounced or delayed to prevent rapid overwrites)
+    const persist = async () => {
+      try {
+        await papi.themes.setAllThemes(userThemesOnly);
+        console.log('✅ Theme changes persisted to backend');
+      } catch (e) {
+        logger.error(`❌ Failed to persist themes: ${getErrorMessage(e)}`);
+      }
+    };
+    persist();
+  }, [selectedTheme]); // 🔹 only run when selectedTheme changes
 
   return (
     <ErrorBoundary>
