@@ -274,7 +274,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
     const persist = async () => {
       try {
         await papi.themes.setAllThemes(userThemesOnly);
-        console.log('✅ Theme changes persisted to backend');
+        console.log('✅ Theme changes persisted to backend: ', userThemesOnly);
       } catch (e) {
         logger.error(`❌ Failed to persist themes: ${getErrorMessage(e)}`);
       }
@@ -467,7 +467,9 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                           cursor: 'default',
                         }}
                       />
-                      <span style={{ fontFamily: 'monospace', color: '#666' }}>{swatchColor}</span>
+                      <span style={{ fontFamily: 'monospace', color: '#666' }}>
+                        {value?.split(' ').length !== 3 ? value : ''}
+                      </span>
                     </div>
                   );
                 })}
@@ -488,184 +490,142 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
               zIndex: 1000,
             }}
           >
-            <div
-              style={{
-                width: '100px',
-                height: '50px',
-                backgroundColor: `hsl(${hue ?? 0}, ${saturation ?? 0}%, ${lightness ?? 0}%)`,
-                border: '1px solid #999',
-                borderRadius: '4px',
-                marginBottom: '0.5rem',
-              }}
-            />
-            <div style={{ fontFamily: 'monospace', color: '#333', marginBottom: '0.5rem' }}>
-              hsl({hue}, {saturation}%, {lightness}%)
-            </div>
-            {selectedTheme && hue !== null && (
-              // hue slider
-              <label style={{ display: 'block', marginBottom: '0.25rem' }}>
-                Hue: {hue}
-                <input
-                  type="range"
-                  min={0}
-                  max={360}
-                  value={hue}
-                  onChange={(e) => {
-                    const newHue = Number(e.target.value);
-                    setHue(newHue);
-                    if (selectedCssVariable && selectedTheme) {
-                      console.log('Before Hue Update:', {
-                        selectedTheme,
-                        cssVariables: selectedTheme.cssVariables,
-                        selectedCssVariable,
-                      });
-                      const newHsl = `hsl(${newHue}, ${saturation ?? 0}%, ${lightness ?? 0}%)`;
-                      setSelectedCssVariable({
-                        key: selectedCssVariable.key,
-                        value: newHsl,
-                      });
-                      const newCssVariables = {
-                        ...(selectedTheme.cssVariables || {}),
-                        [selectedCssVariable.key]: newHsl,
-                      };
-                      setSelectedTheme({
-                        ...selectedTheme,
-                        cssVariables: newCssVariables,
-                      });
-                      console.log('After Hue Update:', {
-                        newHsl,
-                        cssVariables: newCssVariables,
-                      });
-                    } else {
-                      console.log('Hue Update Skipped:', { selectedCssVariable, selectedTheme });
-                    }
+            {/* Check if popoverColor is in HSL format */}
+            {/^(hsl\(\s*[\d.]+\s*,\s*[\d.]+%\s*,\s*[\d.]+%\s*\))$/.test(popoverColor) ? (
+              <>
+                <div
+                  style={{
+                    width: '100px',
+                    height: '50px',
+                    backgroundColor: `hsl(${hue ?? 0}, ${saturation ?? 0}%, ${lightness ?? 0}%)`,
+                    border: '1px solid #999',
+                    borderRadius: '4px',
+                    marginBottom: '0.5rem',
                   }}
-                  style={{ width: '100%' }}
                 />
-              </label>
+                <div style={{ fontFamily: 'monospace', color: '#333', marginBottom: '0.5rem' }}>
+                  hsl({hue}, {saturation}%, {lightness}%)
+                </div>
+
+                {/* Hue slider */}
+                {selectedTheme && hue !== undefined && (
+                  <label style={{ display: 'block', marginBottom: '0.25rem' }}>
+                    Hue: {hue}
+                    <input
+                      type="range"
+                      min={0}
+                      max={360}
+                      value={hue}
+                      onChange={(e) => {
+                        const newHue = Number(e.target.value);
+                        setHue(newHue);
+                        if (selectedCssVariable && selectedTheme) {
+                          const newHsl = `hsl(${newHue}, ${saturation ?? 0}%, ${lightness ?? 0}%)`;
+                          setSelectedCssVariable({ key: selectedCssVariable.key, value: newHsl });
+                          setSelectedTheme({
+                            ...selectedTheme,
+                            cssVariables: {
+                              ...selectedTheme.cssVariables,
+                              [selectedCssVariable.key]: newHsl,
+                            },
+                          });
+                        }
+                      }}
+                      style={{ width: '100%' }}
+                    />
+                  </label>
+                )}
+
+                {/* Saturation slider */}
+                {selectedTheme && saturation !== undefined && (
+                  <label style={{ display: 'block', marginBottom: '0.25rem' }}>
+                    Saturation: {saturation}%
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={saturation}
+                      onChange={(e) => {
+                        const newSaturation = Number(e.target.value);
+                        setSaturation(newSaturation);
+                        if (selectedCssVariable && selectedTheme) {
+                          const newHsl = `hsl(${hue ?? 0}, ${newSaturation}%, ${lightness ?? 0}%)`;
+                          setSelectedCssVariable({ key: selectedCssVariable.key, value: newHsl });
+                          setSelectedTheme({
+                            ...selectedTheme,
+                            cssVariables: {
+                              ...selectedTheme.cssVariables,
+                              [selectedCssVariable.key]: newHsl,
+                            },
+                          });
+                        }
+                      }}
+                      style={{ width: '100%' }}
+                    />
+                  </label>
+                )}
+
+                {/* Lightness slider */}
+                {selectedTheme && lightness !== undefined && (
+                  <label style={{ display: 'block' }}>
+                    Lightness: {lightness}%
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={lightness}
+                      onChange={(e) => {
+                        const newLightness = Number(e.target.value);
+                        setLightness(newLightness);
+                        if (selectedCssVariable && selectedTheme) {
+                          const newHsl = `hsl(${hue ?? 0}, ${saturation ?? 0}%, ${newLightness}%)`;
+                          setSelectedCssVariable({ key: selectedCssVariable.key, value: newHsl });
+                          setSelectedTheme({
+                            ...selectedTheme,
+                            cssVariables: {
+                              ...selectedTheme.cssVariables,
+                              [selectedCssVariable.key]: newHsl,
+                            },
+                          });
+                        }
+                      }}
+                      style={{ width: '100%' }}
+                    />
+                  </label>
+                )}
+              </>
+            ) : (
+              // If it's not an HSL color → text input
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.25rem' }}>
+                  Color Value:
+                  <input
+                    type="text"
+                    value={selectedCssVariable?.value || ''}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      setSelectedCssVariable({ key: selectedCssVariable?.key, value: newValue });
+                      if (selectedTheme) {
+                        setSelectedTheme({
+                          ...selectedTheme,
+                          cssVariables: {
+                            ...selectedTheme.cssVariables,
+                            [selectedCssVariable!.key]: newValue,
+                          },
+                        });
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      padding: '0.25rem',
+                      fontFamily: 'monospace',
+                    }}
+                  />
+                </label>
+              </div>
             )}
-            {selectedTheme && saturation !== null && (
-              // saturation slider
-              <label style={{ display: 'block', marginBottom: '0.25rem' }}>
-                Saturation: {saturation}%
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  value={saturation}
-                  onChange={(e) => {
-                    const newSaturation = Number(e.target.value);
-                    setSaturation(newSaturation);
-                    if (selectedCssVariable && selectedTheme) {
-                      console.log('Before Saturation Update:', {
-                        selectedTheme,
-                        cssVariables: selectedTheme.cssVariables,
-                        selectedCssVariable,
-                      });
-                      const newHsl = `hsl(${hue ?? 0}, ${newSaturation}%, ${lightness ?? 0}%)`;
-                      setSelectedCssVariable({
-                        key: selectedCssVariable.key,
-                        value: newHsl,
-                      });
-                      const newCssVariables = {
-                        ...(selectedTheme.cssVariables || {}),
-                        [selectedCssVariable.key]: newHsl,
-                      };
-                      setSelectedTheme({
-                        ...selectedTheme,
-                        cssVariables: newCssVariables,
-                      });
-                      console.log('After Saturation Update:', {
-                        newHsl,
-                        cssVariables: newCssVariables,
-                      });
-                    } else {
-                      console.log('Saturation Update Skipped:', {
-                        selectedCssVariable,
-                        selectedTheme,
-                      });
-                    }
-                  }}
-                  style={{ width: '100%' }}
-                />
-              </label>
-            )}
-            {selectedTheme && lightness !== null && (
-              // lightness slider
-              <label style={{ display: 'block' }}>
-                Lightness: {lightness}%
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  value={lightness}
-                  onChange={(e) => {
-                    const newLightness = Number(e.target.value);
-                    setLightness(newLightness);
-                    if (selectedCssVariable && selectedTheme) {
-                      console.log('Before Lightness Update:', {
-                        selectedTheme,
-                        cssVariables: selectedTheme.cssVariables,
-                        selectedCssVariable,
-                      });
-                      const newHsl = `hsl(${hue ?? 0}, ${saturation ?? 0}%, ${newLightness}%)`;
-                      setSelectedCssVariable({
-                        key: selectedCssVariable.key,
-                        value: newHsl,
-                      });
-                      const newCssVariables = {
-                        ...(selectedTheme.cssVariables || {}),
-                        [selectedCssVariable.key]: newHsl,
-                      };
-                      setSelectedTheme({
-                        ...selectedTheme,
-                        cssVariables: newCssVariables,
-                      });
-                      console.log('After Lightness Update:', {
-                        newHsl,
-                        cssVariables: newCssVariables,
-                      });
-                    } else {
-                      console.log('Lightness Update Skipped:', {
-                        selectedCssVariable,
-                        selectedTheme,
-                      });
-                    }
-                  }}
-                  style={{ width: '100%' }}
-                />
-              </label>
-            )}
-          </div>
-        )}
-        {selectedCssVariable && (
-          <div
-            style={{
-              marginTop: '1rem',
-              padding: '1rem',
-              background: '#f4f4f4',
-              borderRadius: '8px',
-              border: '1px solid #ddd',
-            }}
-          >
-            <h4 style={{ marginBottom: '0.5rem', fontWeight: 'bold' }}>
-              {selectedCssVariable.key}:{' '}
-              <span style={{ fontFamily: 'monospace' }}>{selectedCssVariable.value}</span>
-            </h4>
-            <div
-              style={{
-                width: '100px',
-                height: '40px',
-                backgroundColor: resolveCssVariable(selectedCssVariable.value) || '#ccc',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                marginBottom: '0.5rem',
-              }}
-              title={resolveCssVariable(selectedCssVariable.value)}
-            />
-            <div style={{ color: '#666', fontFamily: 'monospace' }}>
-              Resolved: {resolveCssVariable(selectedCssVariable.value)}
-            </div>
           </div>
         )}
       </div>
