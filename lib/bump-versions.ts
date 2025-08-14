@@ -90,6 +90,14 @@ const shouldAllowWorkingChanges = process.argv.includes('--allow-working-changes
 
   // #region shared with https://github.com/paranext/paranext-extension-template/blob/main/lib/bump-versions.ts and https://github.com/paranext/paranext/blob/main/lib/bump-versions.ts
 
+  // Lint fix the changes
+  try {
+    await execCommand(`npm run lint-fix`);
+  } catch (e) {
+    console.error(`Error on lint fixing changes: ${e}`);
+    return 1;
+  }
+
   // Commit the changes
   try {
     await execCommand(`git commit -a -m "Bump versions to ${newVersion}"`);
