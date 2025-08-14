@@ -55,6 +55,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   const [hue, setHue] = useState<number | null>(null);
   const [saturation, setSaturation] = useState<number | null>(null);
   const [lightness, setLightness] = useState<number | null>(null);
+  const [themeToCopyFrom, setThemeToCopyFrom] = useState<string>('');
 
   const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
 
@@ -391,6 +392,78 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
             onCheckedChange={(isChecked) => setShouldMatchSystem?.(!!isChecked)}
           />
         </div>
+        {/* New Copy Theme Button */}
+        <Button
+          onClick={() => {
+            if (!themeToCopyFrom) {
+              logger.warn('No theme selected to copy from');
+              return;
+            }
+            if (!selectedTheme) {
+              logger.warn('No target selectedTheme to copy into');
+              return;
+            }
+
+            const [familyId, type] = themeToCopyFrom.split('::');
+            const themeSource = allThemes[familyId]?.[type];
+
+            if (!themeSource) {
+              logger.error(`Theme to copy from not found: ${themeToCopyFrom}`);
+              return;
+            }
+
+            // Copy cssVariables from selected source theme into selectedTheme
+            const updatedTheme = {
+              ...selectedTheme,
+              cssVariables: { ...themeSource.cssVariables },
+            };
+
+            setSelectedTheme(updatedTheme);
+            logger.info(`Copied theme ${familyId}::${type} into selectedTheme`);
+          }}
+          style={{ marginRight: '0.5rem' }}
+        >
+          Copy Theme
+        </Button>
+
+        {/* Dropdown List of all themes except selectedTheme */}
+        <select
+          value={themeToCopyFrom}
+          onChange={(e) => setThemeToCopyFrom(e.target.value)}
+          style={{
+            padding: '0.25rem',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
+        >
+          <option value="">-- Select Theme --</option>
+          {Object.entries(allThemes).flatMap(([themeFamilyId, themeFamily]) =>
+            Object.entries(themeFamily ?? {}).map(([type, themeObj]) => {
+              // Skip if this is the selected theme
+              if (
+                selectedTheme &&
+                themeObj?.id === selectedTheme.id &&
+                themeFamilyId === selectedTheme.themeFamilyId &&
+                type === selectedTheme.type
+              ) {
+                return null;
+              }
+
+              const label =
+                localizedStrings[themeObj?.label] ?? themeObj?.label ?? '(Unnamed Theme)';
+              const suffix = themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)
+                ? ' ' + themeFamilyId.substring(papi.themes.USER_THEME_FAMILY_PREFIX.length)
+                : '';
+
+              return (
+                <option key={`${themeFamilyId}-${type}`} value={`${themeFamilyId}::${type}`}>
+                  {label}
+                  {suffix}
+                </option>
+              );
+            }),
+          )}
+        </select>
         {selectedTheme &&
           selectedTheme.cssVariables &&
           Object.keys(selectedTheme.cssVariables || {}).length > 0 && (
