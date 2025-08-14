@@ -102,7 +102,10 @@ jobs:
           omitPrereleaseDuringUpdate: true
           # make the new release a pre-release
           prerelease: true
+          # tag+commit creates a version tag for this release with the tag name at the commit ref
+          # so the GitHub Release doesn't have to create the tag and assume it is on `main`
           tag: v${{ inputs.version }}
+          commit: ${{ github.head_ref || github.ref_name }}
           # only update if the release is still a draft
           updateOnlyUnreleased: true
 
