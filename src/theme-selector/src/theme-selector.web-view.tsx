@@ -56,7 +56,10 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   const [saturation, setSaturation] = useState<number | null>(null);
   const [lightness, setLightness] = useState<number | null>(null);
   const [themeToCopyFrom, setThemeToCopyFrom] = useState<string>('');
+  const [hoverBg, setHoverBg] = useState<string | null>(null);
 
+  const dropdownBg = selectedTheme?.colors?.background || '#ffffff';
+  const effectiveBg = hoverBg || dropdownBg;
   const themeDataProvider = useDataProvider(papi.themes.dataProviderName);
 
   // custom hook to get access to the theme data provider's setAllThemes function
@@ -425,7 +428,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
         >
           Copy Theme
         </Button>
-
         {/* Dropdown List of all themes except selectedTheme */}
         <select
           value={themeToCopyFrom}
@@ -434,19 +436,20 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
             padding: '0.25rem',
             border: '1px solid #ccc',
             borderRadius: '4px',
+            backgroundColor: effectiveBg,
+            color: getContrastTextColor(effectiveBg),
           }}
         >
           <option value="">-- Select Theme --</option>
           {Object.entries(allThemes).flatMap(([themeFamilyId, themeFamily]) =>
             Object.entries(themeFamily ?? {}).map(([type, themeObj]) => {
-              // Skip if this is the selected theme
               if (
                 selectedTheme &&
                 themeObj?.id === selectedTheme.id &&
                 themeFamilyId === selectedTheme.themeFamilyId &&
                 type === selectedTheme.type
               ) {
-                return null;
+                return null; // Skip current theme
               }
 
               const label =
@@ -455,8 +458,19 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 ? ' ' + themeFamilyId.substring(papi.themes.USER_THEME_FAMILY_PREFIX.length)
                 : '';
 
+              const optionBg = themeObj?.colors?.background || dropdownBg;
+
               return (
-                <option key={`${themeFamilyId}-${type}`} value={`${themeFamilyId}::${type}`}>
+                <option
+                  key={`${themeFamilyId}-${type}`}
+                  value={`${themeFamilyId}::${type}`}
+                  style={{
+                    backgroundColor: optionBg,
+                    color: getContrastTextColor(optionBg),
+                  }}
+                  onMouseEnter={() => setHoverBg(optionBg)}
+                  onMouseLeave={() => setHoverBg(null)}
+                >
                   {label}
                   {suffix}
                 </option>
