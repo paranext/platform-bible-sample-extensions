@@ -17,8 +17,8 @@ on:
         default: false
 
 jobs:
-  publish:
-    name: Release on ${{ matrix.os }}
+  bump-versions:
+    name: Bump versions on ${{ matrix.os }}
 
     runs-on: ${{ matrix.os }}
 
@@ -40,6 +40,8 @@ jobs:
       - name: Read package.json
         id: package_json
         uses: zoexx/github-action-json-file-properties@1.0.6
+        with:
+          file_path: 'package.json'
 
       - name: Install Node and NPM
         uses: actions/setup-node@v4
