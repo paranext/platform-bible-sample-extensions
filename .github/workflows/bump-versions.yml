@@ -33,7 +33,6 @@ jobs:
       - name: Checkout git repo
         uses: actions/checkout@v4
 
-        # TODO: Make another action with this, verify, install, and ci?
       - name: Read package.json
         id: package_json
         uses: zoexx/github-action-json-file-properties@1.0.6
