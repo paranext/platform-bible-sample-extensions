@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
     inputs:
       newVersion:
-        description: "Version to bump all the repo's versions to on a new branch (called `bump-versions-<version>`), e.g. 0.3.0-alpha.0. If empty, will not bump the versions."
-        required: false
+        description: "Version to bump all the repo's versions to on a new branch (called `bump-versions-<version>`), e.g. 0.3.0-alpha.0."
+        required: true
       debug_enabled:
         type: boolean
         description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
