@@ -3,7 +3,7 @@ import path from 'path';
 import { getExtensions } from '../webpack/webpack.util';
 import { checkForWorkingChanges, execCommand } from './git.util';
 
-// #region shared with https://github.com/paranext/paranext-extension-template/blob/main/lib/bump-versions.ts and https://github.com/paranext/paranext/blob/main/lib/bump-versions.ts
+// #region shared with https://github.com/paranext/paranext-extension-template/blob/main/lib/bump-versions.ts
 
 // This script checks out a new branch, bumps the versions of all extensions in the repo,
 // and then commits the changes. It is generally expected that you will be on `main` when you run
@@ -15,6 +15,10 @@ import { checkForWorkingChanges, execCommand } from './git.util';
 
 const newVersion = process.argv[2];
 const shouldAllowWorkingChanges = process.argv.includes('--allow-working-changes');
+
+// #endregion
+
+// #region shared with https://github.com/paranext/paranext-extension-template/blob/main/lib/bump-versions.ts and https://github.com/paranext/paranext/blob/main/lib/bump-versions.ts
 
 (async () => {
   // Make sure there are not working changes so we don't interfere with normal edits
