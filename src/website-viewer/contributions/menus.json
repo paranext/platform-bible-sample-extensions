@@ -44,6 +44,12 @@
         "group": "website-viewer.openGroup",
         "order": 4,
         "command": "websiteViewer.openStepBible"
+      },
+      {
+        "label": "%websiteViewerMenu_openUnicodeExplorer%",
+        "group": "website-viewer.openGroup",
+        "order": 5,
+        "command": "websiteViewer.openUnicodeExplorer"
       }
     ]
   },
@@ -67,7 +73,10 @@
           }
         },
         "groups": {
-          "website-viewer.website": { "column": "website-viewer.website", "order": 3 }
+          "website-viewer.website": {
+            "column": "website-viewer.website",
+            "order": 3
+          }
         },
         "items": [
           {

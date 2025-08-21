@@ -218,11 +218,18 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
     watchRefChange: RefChange.WatchChapterChange,
   };
 
+  const unicodeExplorerOptions: WebsiteViewerOptions = {
+    getUrl: () => 'https://unicode-explorer.com/c/200B',
+    websiteName: 'Unicode Explorer',
+    watchRefChange: RefChange.DoNotWatch,
+  };
+
   return new Map<keyof CommandHandlers, WebsiteViewerOptions>([
     ['websiteViewer.openUsfmDocs', usfmDocsOptions],
     ['websiteViewer.openOTN', otnOptions],
     ['websiteViewer.openMarble', marbleOptions],
     ['websiteViewer.openWiBiLex', wiBiLexOptions],
     ['websiteViewer.openStepBible', stepBibleOptions],
+    ['websiteViewer.openUnicodeExplorer', unicodeExplorerOptions],
   ]);
 }

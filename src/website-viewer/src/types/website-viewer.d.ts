@@ -57,5 +57,14 @@ declare module 'papi-shared-types' {
      * @returns Promise of void
      */
     'websiteViewer.openUrl': (webViewId: string) => Promise<void>;
+
+    /**
+     * Opens or updates a Website Viewer web view for https://unicode-explorer.com and returns the
+     * web view id
+     *
+     * @returns From return value of openWebView: Promise that resolves to the ID of the web view we
+     *   got or undefined if the provider did not create a WebView for this request
+     */
+    'websiteViewer.openUnicodeExplorer': () => Promise<string | undefined>;
   }
 }
