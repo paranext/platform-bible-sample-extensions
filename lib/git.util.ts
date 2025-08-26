@@ -285,7 +285,11 @@ export async function formatExtensionFolder(extensionFolderPath: string) {
 
     console.log(`Updated module declaration and references in types file`);
   } catch (error) {
-    console.error(`Could not update types file: ${error.message}`);
+    if (error instanceof Error) {
+      console.error(`Could not update types file: ${error.message}`);
+    } else {
+      console.error(`An unknown error occurred while updating types file: ${error}`);
+    }
   }
 
   // Update README.md
@@ -319,9 +323,12 @@ export async function formatExtensionFolder(extensionFolderPath: string) {
     const modifiedTitle = titleSection.map((line) =>
       line.replace(/paranext-extension-template/g, extensionName),
     );
-    const modifiedSummary = summarySection.map((line) =>
-      line.replace(/paranext-extension-template/g, extensionName),
-    );
+    const modifiedSummary = summarySection.map((line) => {
+      if (line.includes('https://github.com/paranext/paranext-extension-template/wiki'))
+        return line;
+
+      return line.replace(/paranext-extension-template/g, extensionName);
+    });
 
     // Reconstruct the README
     const finalLines = [...modifiedTitle, ...betweenTitleAndSummary, ...modifiedSummary, ...after];
@@ -329,7 +336,11 @@ export async function formatExtensionFolder(extensionFolderPath: string) {
     await fs.writeFile(readmePath, finalLines.join('\n'), 'utf8');
     console.log(`Updated README.md: modified title and summary sections only`);
   } catch (error) {
-    console.error(`Could not update README.md: ${error.message}`);
+    if (error instanceof Error) {
+      console.error(`Could not update README.md: ${error.message}`);
+    } else {
+      console.error(`An unknown error occurred while updating README.md: ${error}`);
+    }
   }
 
   // Update manifest.json
@@ -352,7 +363,11 @@ export async function formatExtensionFolder(extensionFolderPath: string) {
     await fs.writeFile(manifestPath, manifestContent, 'utf8');
     console.log(`Updated manifest.json with ${extensionName} information`);
   } catch (error) {
-    console.error(`Could not update manifest.json: ${error.message}`);
+    if (error instanceof Error) {
+      console.error(`Could not update manifest.json: ${error.message}`);
+    } else {
+      console.error(`An unknown error occurred while updating manifest.json: ${error}`);
+    }
   }
 
   // Update package.json
@@ -369,6 +384,10 @@ export async function formatExtensionFolder(extensionFolderPath: string) {
     await fs.writeFile(packagePath, packageContent, 'utf8');
     console.log(`Updated package.json with ${extensionName} information`);
   } catch (error) {
-    console.error(`Could not update package.json: ${error.message}`);
+    if (error instanceof Error) {
+      console.error(`Could not update package.json: ${error.message}`);
+    } else {
+      console.error(`An unknown error occurred while updating package.json: ${error}`);
+    }
   }
 }
