@@ -1,7 +1,7 @@
 {
   "name": "website-viewer",
   "private": true,
-  "version": "0.3.0-alpha.2",
+  "version": "0.3.0",
   "main": "src/main.js",
   "types": "src/types/website-viewer.d.ts",
   "author": "Paranext",
