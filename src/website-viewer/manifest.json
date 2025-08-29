@@ -1,6 +1,6 @@
 {
   "name": "website-viewer",
-  "version": "0.3.0",
+  "version": "0.4.0-alpha.0",
   "displayData": "assets/displayData.json",
   "author": "Paranext",
   "license": "MIT",
