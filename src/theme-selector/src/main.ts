@@ -18,6 +18,7 @@ const themeSelectorWebViewProvider: IWebViewProviderWithType = {
       throw new Error(
         `${this.webViewType} provider received request to provide a ${savedWebView.webViewType} web view`,
       );
+
     return {
       title: '%themeSelector_title%',
       ...savedWebView,
