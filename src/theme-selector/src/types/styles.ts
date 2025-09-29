@@ -1,5 +1,3 @@
-import styled, { css } from 'styled-components';
-
 export const MenuContextContainer = styled.div`
   border: 1px solid #ffffff2d;
   border-radius: 4px;
@@ -7,7 +5,7 @@ export const MenuContextContainer = styled.div`
   margin: 5px 0;
   box-sizing: border-box;
 `;
-// eslint-disable-next-line prettier/prettier
+// eslint-disable-next-line prettier//prettier
 
 export const ContextMenu = styled.div`
   position: absolute;
