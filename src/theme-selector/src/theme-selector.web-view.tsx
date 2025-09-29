@@ -2,7 +2,16 @@ import { WebViewProps } from '@papi/core';
 import papi, { logger } from '@papi/frontend';
 import { useData, useDataProvider, useLocalizedStrings } from '@papi/frontend/react';
 import { useState, useEffect, useMemo, Component, ReactNode } from 'react';
-import { Label, DropdownMenu, Button, Checkbox } from 'platform-bible-react';
+import {
+  Label,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+  Button,
+  Checkbox,
+} from 'platform-bible-react';
 import {
   getErrorMessage,
   isPlatformError,
@@ -351,87 +360,94 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
         />
       </div>
       {/* New Copy Theme Button */}
-      <Button
-        onClick={() => {
-          if (!themeToCopyFrom) {
-            logger.warn('No theme selected to copy from');
-            return;
-          }
-          if (!selectedTheme) {
-            logger.warn('No target selectedTheme to copy into');
-            return;
-          }
-
-          const [familyId, type] = themeToCopyFrom.split('::');
-          const themeSource = allThemes[familyId]?.[type];
-
-          if (!themeSource) {
-            logger.error(`Theme to copy from not found: ${themeToCopyFrom}`);
-            return;
-          }
-
-          // Copy cssVariables from selected source theme into selectedTheme
-          const updatedTheme = {
-            ...selectedTheme,
-            cssVariables: { ...themeSource.cssVariables },
-          };
-
-          setSelectedTheme(updatedTheme);
-          logger.info(`Copied theme ${familyId}::${type} into selectedTheme`);
-        }}
-        style={{ marginRight: '0.5rem' }}
-      >
-        Copy Theme
-      </Button>
-      {/* Dropdown List of all themes except selectedTheme */}
-      <select
-        value={themeToCopyFrom}
-        onChange={(e) => setThemeToCopyFrom(e.target.value)}
-        style={{
-          padding: '0.25rem',
-          border: '1px solid #ccc',
-          borderRadius: '4px',
-          backgroundColor: effectiveBg,
-          color: getContrastTextColor(effectiveBg),
-        }}
-      >
-        <option value="">-- Select Theme --</option>
-        {Object.entries(allThemes).flatMap(([themeFamilyId, themeFamily]) =>
-          Object.entries(themeFamily ?? {}).map(([type, themeObj]) => {
-            if (
-              selectedTheme &&
-              themeObj?.id === selectedTheme.id &&
-              themeFamilyId === selectedTheme.themeFamilyId &&
-              type === selectedTheme.type
-            ) {
-              return ''; // Skip current theme
+      <div style={{ display: 'flex' }}>
+        <Button
+          onClick={() => {
+            if (!themeToCopyFrom) {
+              logger.warn('No theme selected to copy from');
+              return;
+            }
+            if (!selectedTheme) {
+              logger.warn('No target selectedTheme to copy into');
+              return;
             }
 
-            const label = localizedStrings[themeObj?.label] ?? themeObj?.label ?? '(Unnamed Theme)';
-            const suffix = themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)
-              ? ' ' + themeFamilyId.substring(papi.themes.USER_THEME_FAMILY_PREFIX.length)
-              : '';
+            const [familyId, type] = themeToCopyFrom.split('::');
+            const themeSource = allThemes[familyId]?.[type];
 
-            const optionBg = themeObj?.colors?.background || dropdownBg;
+            if (!themeSource) {
+              logger.error(`Theme to copy from not found: ${themeToCopyFrom}`);
+              return;
+            }
 
-            return (
-              <option
-                key={`${themeFamilyId}-${type}`}
-                value={`${themeFamilyId}::${type}`}
-                style={{
-                  backgroundColor: optionBg,
-                  color: getContrastTextColor(optionBg),
-                }}
-                onMouseEnter={() => setHoverBg(optionBg)}
-                onMouseLeave={() => setHoverBg(undefined)}
-              >
-                {label}
-                {suffix}
-              </option>
-            );
-          }),
-        )}
-      </select>
+            // Copy cssVariables from selected source theme into selectedTheme
+            const updatedTheme = {
+              ...selectedTheme,
+              cssVariables: { ...themeSource.cssVariables },
+            };
+
+            setSelectedTheme(updatedTheme);
+            logger.info(`Copied theme ${familyId}::${type} into selectedTheme`);
+          }}
+          style={{ marginRight: '0.5rem' }}
+        >
+          Copy Theme
+        </Button>
+        {/* Dropdown List of all themes except selectedTheme */}
+        <Select
+          value={themeToCopyFrom}
+          onChange={(e) => setThemeToCopyFrom(e.target.value)}
+          style={{
+            padding: '0.25rem',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            backgroundColor: effectiveBg,
+            color: getContrastTextColor(effectiveBg),
+          }}
+        >
+          <SelectTrigger className="tw-w-48">
+            <SelectValue placeholder="Select a Theme" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(allThemes).flatMap(([themeFamilyId, themeFamily]) =>
+              Object.entries(themeFamily ?? {}).map(([type, themeObj]) => {
+                if (
+                  selectedTheme &&
+                  themeObj?.id === selectedTheme.id &&
+                  themeFamilyId === selectedTheme.themeFamilyId &&
+                  type === selectedTheme.type
+                ) {
+                  return ''; // Skip current theme
+                }
+
+                const label =
+                  localizedStrings[themeObj?.label] ?? themeObj?.label ?? '(Unnamed Theme)';
+                const suffix = themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)
+                  ? ' ' + themeFamilyId.substring(papi.themes.USER_THEME_FAMILY_PREFIX.length)
+                  : '';
+
+                const optionBg = themeObj?.colors?.background || dropdownBg;
+
+                return (
+                  <SelectItem
+                    key={`${themeFamilyId}-${type}`}
+                    value={`${themeFamilyId}::${type}`}
+                    style={{
+                      backgroundColor: optionBg,
+                      color: getContrastTextColor(optionBg),
+                    }}
+                    onMouseEnter={() => setHoverBg(optionBg)}
+                    onMouseLeave={() => setHoverBg(undefined)}
+                  >
+                    {label}
+                    {suffix}
+                  </SelectItem>
+                );
+              }),
+            )}
+          </SelectContent>
+        </Select>
+      </div>
       {selectedTheme &&
         selectedTheme.cssVariables &&
         Object.keys(selectedTheme.cssVariables || {}).length > 0 && (
