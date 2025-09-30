@@ -1,7 +1,7 @@
 import { WebViewProps } from '@papi/core';
 import papi, { logger } from '@papi/frontend';
 import { useData, useDataProvider, useLocalizedStrings } from '@papi/frontend/react';
-import { useState, useEffect, useMemo, Component, ReactNode } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Label,
   Select,
@@ -281,7 +281,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
       <div>{titleLocalized}</div>
       <div>
         {Object.entries(allThemes).map(([themeFamilyId, themeFamily]) => (
-          <div key={themeFamilyId} style={{ marginBottom: '0.5rem' }}>
+          <div key={themeFamilyId} className="mb-2">
             {Object.entries(themeFamily ?? {}).map(([type, themeToDisplay]) => {
               const isSelected = theme.id === themeToDisplay?.id;
               const localizedLabel =
@@ -328,8 +328,6 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                   }}
                   variant={isSelected ? 'outline' : 'default'}
                   style={{
-                    marginRight: '0.5rem',
-                    marginBottom: '0.5rem',
                     // Set background color from theme or fallback
                     backgroundColor: isSelected
                       ? themeToDisplay?.cssVariables?.['--background-color'] || '#fff' // Selected: Use theme background or white
@@ -342,6 +340,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                     ),
                     border: isSelected ? '2px solid #333' : '1px solid #ccc', // Optional: Enhance selected state
                   }}
+                  className="mr-2 mb-2 rounded p-2"
                 >
                   {localizedLabel}
                   {suffix}
@@ -360,108 +359,109 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
         />
       </div>
       {/* New Copy Theme Button */}
-      <div style={{ display: 'flex' }}>
-        <Button
-          onClick={() => {
-            if (!themeToCopyFrom) {
-              logger.warn('No theme selected to copy from');
-              return;
-            }
-            if (!selectedTheme) {
-              logger.warn('No target selectedTheme to copy into');
-              return;
-            }
+      <Button
+        onClick={() => {
+          if (!themeToCopyFrom) {
+            logger.warn('No theme selected to copy from');
+            return;
+          }
+          if (!selectedTheme) {
+            logger.warn('No target selectedTheme to copy into');
+            return;
+          }
 
-            const [familyId, type] = themeToCopyFrom.split('::');
-            const themeSource = allThemes[familyId]?.[type];
+          const [familyId, type] = themeToCopyFrom.split('::');
+          const themeSource = allThemes[familyId]?.[type];
 
-            if (!themeSource) {
-              logger.error(`Theme to copy from not found: ${themeToCopyFrom}`);
-              return;
-            }
+          if (!themeSource) {
+            logger.error(`Theme to copy from not found: ${themeToCopyFrom}`);
+            return;
+          }
 
-            // Copy cssVariables from selected source theme into selectedTheme
-            const updatedTheme = {
-              ...selectedTheme,
-              cssVariables: { ...themeSource.cssVariables },
-            };
+          // Copy cssVariables from selected source theme into selectedTheme
+          const updatedTheme = {
+            ...selectedTheme,
+            cssVariables: { ...themeSource.cssVariables },
+          };
 
-            setSelectedTheme(updatedTheme);
-            logger.info(`Copied theme ${familyId}::${type} into selectedTheme`);
-          }}
-          style={{ marginRight: '0.5rem' }}
-        >
-          Copy Theme
-        </Button>
-        {/* Dropdown List of all themes except selectedTheme */}
-        <Select
-          value={themeToCopyFrom}
-          onChange={(e) => setThemeToCopyFrom(e.target.value)}
+          setSelectedTheme(updatedTheme);
+          logger.info(`Copied theme ${familyId}::${type} into selectedTheme`);
+        }}
+        style={{
+          backgroundColor: effectiveBg,
+          color: getContrastTextColor(effectiveBg),
+        }}
+      >
+        Copy Theme
+      </Button>
+      {/* Dropdown List of all themes except selectedTheme */}
+      <Select
+        value={themeToCopyFrom}
+        onChange={(e) => setThemeToCopyFrom(e.target.value)}
+        style={{
+          backgroundColor: effectiveBg,
+          color: getContrastTextColor(effectiveBg),
+        }}
+        className="p-1 border border-gray-300 rounded"
+      >
+        <SelectTrigger
+          className="tw-w-48"
           style={{
-            padding: '0.25rem',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
             backgroundColor: effectiveBg,
             color: getContrastTextColor(effectiveBg),
           }}
         >
-          <SelectTrigger className="tw-w-48">
-            <SelectValue placeholder="Select a Theme" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(allThemes).flatMap(([themeFamilyId, themeFamily]) =>
-              Object.entries(themeFamily ?? {}).map(([type, themeObj]) => {
-                if (
-                  selectedTheme &&
-                  themeObj?.id === selectedTheme.id &&
-                  themeFamilyId === selectedTheme.themeFamilyId &&
-                  type === selectedTheme.type
-                ) {
-                  return ''; // Skip current theme
-                }
+          <SelectValue placeholder="Select a Theme" />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(allThemes).flatMap(([themeFamilyId, themeFamily]) =>
+            Object.entries(themeFamily ?? {}).map(([type, themeObj]) => {
+              if (
+                selectedTheme &&
+                themeObj?.id === selectedTheme.id &&
+                themeFamilyId === selectedTheme.themeFamilyId &&
+                type === selectedTheme.type
+              ) {
+                return ''; // Skip current theme
+              }
 
-                const label =
-                  localizedStrings[themeObj?.label] ?? themeObj?.label ?? '(Unnamed Theme)';
-                const suffix = themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)
-                  ? ' ' + themeFamilyId.substring(papi.themes.USER_THEME_FAMILY_PREFIX.length)
-                  : '';
+              const label =
+                localizedStrings[themeObj?.label] ?? themeObj?.label ?? '(Unnamed Theme)';
+              const suffix = themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)
+                ? ' ' + themeFamilyId.substring(papi.themes.USER_THEME_FAMILY_PREFIX.length)
+                : '';
 
-                const optionBg = themeObj?.colors?.background || dropdownBg;
+              const optionBg = themeObj?.colors?.background || dropdownBg;
 
-                return (
-                  <SelectItem
-                    key={`${themeFamilyId}-${type}`}
-                    value={`${themeFamilyId}::${type}`}
-                    style={{
-                      backgroundColor: optionBg,
-                      color: getContrastTextColor(optionBg),
-                    }}
-                    onMouseEnter={() => setHoverBg(optionBg)}
-                    onMouseLeave={() => setHoverBg(undefined)}
-                  >
-                    {label}
-                    {suffix}
-                  </SelectItem>
-                );
-              }),
-            )}
-          </SelectContent>
-        </Select>
-      </div>
+              return (
+                <SelectItem
+                  key={`${themeFamilyId}-${type}`}
+                  value={`${themeFamilyId}::${type}`}
+                  className={`p-4 rounded ${optionBg === 'red' ? 'bg-red-500 text-white' : ''}`}
+                  onMouseEnter={() => setHoverBg(optionBg)}
+                  onMouseLeave={() => setHoverBg(undefined)}
+                >
+                  {label}
+                  {suffix}
+                </SelectItem>
+              );
+            }),
+          )}
+        </SelectContent>
+      </Select>
       {selectedTheme &&
         selectedTheme.cssVariables &&
         Object.keys(selectedTheme.cssVariables || {}).length > 0 && (
-          <div
-            style={{
-              marginTop: '1rem',
-              background: '#f9f9f9',
-              padding: '1rem',
-              borderRadius: '8px',
-            }}
-          >
-            <h3 style={{ marginBottom: '0.75rem' }}>
-              CSS Variables for{' '}
-              <span style={{ color: '#333' }}>
+          <div className="mt-4 bg-gray-100 p-4 rounded-lg">
+            <h3
+              className="mb-3"
+              style={{
+                backgroundColor: effectiveBg,
+                color: getContrastTextColor(effectiveBg),
+              }}
+            >
+              CSS Variables for Theme:{' '}
+              <span className="text-gray-800">
                 {localizedStrings[selectedTheme.label] || selectedTheme.label || '(unknown theme)'}
                 {selectedTheme.themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)
                   ? ' ' +
@@ -471,33 +471,18 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                   : ''}
               </span>
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className="flex flex-col gap-3">
               {Object.entries(selectedTheme.cssVariables || {}).map(([key, value]) => {
                 const swatchColor = resolveCssVariable(value);
                 return (
                   // 1 button (color swatch) for each css variable
                   <div
                     key={key}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      padding: '0.5rem',
-                      border: '1px dashed #ccc',
-                      borderRadius: '4px',
-                      backgroundColor: '#fff',
-                    }}
+                    className="flex items-center gap-3 p-3 border border-dashed border-gray-300 rounded bg-white"
                   >
                     <Button
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        backgroundColor: swatchColor,
-                        border: '1px solid #999',
-                        borderRadius: '4px',
-                        flexShrink: 0,
-                        padding: 0,
-                      }}
+                      className="w-5 h-5 mb-6 border border-gray-500 rounded flex-shrink-0 p-0"
+                      style={{ backgroundColor: swatchColor }}
                       title={swatchColor}
                       onClick={(e) => {
                         handleCssVariableClick(key, value);
@@ -509,18 +494,15 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                       value={key}
                       readOnly
                       style={{
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        padding: '0.25rem',
-                        fontFamily: 'monospace',
-                        color: '#333',
-                        backgroundColor: '#f5f5f5',
-                        cursor: 'default',
+                        backgroundColor: effectiveBg,
+                        color: getContrastTextColor(effectiveBg),
                       }}
+                      className="border border-gray-300 rounded p-1 font-mono text-gray-800 bg-gray-100 cursor-default"
                     />
-                    <span style={{ fontFamily: 'monospace', color: '#666' }}>
+                    <span className="font-mono text-gray-600">
                       {value?.split(' ').length !== 3 ? value : ''}
                     </span>
+                    <br />
                   </div>
                 );
               })}
@@ -546,21 +528,22 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
             <>
               <div
                 style={{
-                  width: '100px',
-                  height: '50px',
                   backgroundColor: `hsl(${hue ?? 0}, ${saturation ?? 0}%, ${lightness ?? 0}%)`,
-                  border: '1px solid #999',
-                  borderRadius: '4px',
-                  marginBottom: '0.5rem',
                 }}
+                className="w-[100px] h-[50px] border border-[#999] rounded-[4px] mb-2"
               />
-              <div style={{ fontFamily: 'monospace', color: '#333', marginBottom: '0.5rem' }}>
+              <div className="font-mono text-gray-800 mb-2">
                 hsl({hue}, {saturation}%, {lightness}%)
               </div>
 
               {/* Hue slider */}
               {selectedTheme && hue !== undefined && (
-                <Label>
+                <Label
+                  style={{
+                    backgroundColor: effectiveBg,
+                    color: getContrastTextColor(effectiveBg),
+                  }}
+                >
                   Hue: {hue}
                   <input
                     type="range"
@@ -582,14 +565,18 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                         });
                       }
                     }}
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </Label>
               )}
-
               {/* Saturation slider */}
               {selectedTheme && saturation !== undefined && (
-                <Label>
+                <Label
+                  style={{
+                    backgroundColor: effectiveBg,
+                    color: getContrastTextColor(effectiveBg),
+                  }}
+                >
                   Saturation: {saturation}%
                   <input
                     type="range"
@@ -611,14 +598,19 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                         });
                       }
                     }}
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </Label>
               )}
 
               {/* Lightness slider */}
               {selectedTheme && lightness !== undefined && (
-                <Label>
+                <Label
+                  style={{
+                    backgroundColor: effectiveBg,
+                    color: getContrastTextColor(effectiveBg),
+                  }}
+                >
                   Lightness: {lightness}%
                   <input
                     type="range"
@@ -640,7 +632,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                         });
                       }
                     }}
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </Label>
               )}
@@ -648,7 +640,12 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
           ) : (
             // If it's not an HSL color → text input
             <div>
-              <Label>
+              <Label
+                style={{
+                  backgroundColor: effectiveBg,
+                  color: getContrastTextColor(effectiveBg),
+                }}
+              >
                 Color Value:
                 <input
                   type="text"
@@ -666,13 +663,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                       });
                     }
                   }}
-                  style={{
-                    width: '100%',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    padding: '0.25rem',
-                    fontFamily: 'monospace',
-                  }}
+                  className="w-full border border-gray-300 rounded p-1 font-mono"
                 />
               </Label>
             </div>
