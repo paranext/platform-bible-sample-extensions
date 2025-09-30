@@ -488,8 +488,11 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                       className="flex items-center gap-3 p-3 border border-dashed border-gray-300 rounded bg-white"
                     >
                       <Button
-                        className="w-5 h-5 mb-6 border border-gray-500 rounded flex-shrink-0 p-0"
-                        style={{ backgroundColor: swatchColor }}
+                        style={{
+                          border: '2px solid black' /* Sets a 2px solid black border */,
+                          padding: '10px 20px' /* Optional: Adds padding to the button */,
+                          backgroundColor: swatchColor,
+                        }}
                         title={swatchColor}
                         onClick={(e) => {
                           handleCssVariableClick(key, value);
