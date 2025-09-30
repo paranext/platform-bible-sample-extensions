@@ -394,6 +394,8 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
       >
         Copy Theme
       </Button>
+      <p> </p>
+      <p> </p>
       {/* Dropdown List of all themes except selectedTheme */}
       <Select
         value={themeToCopyFrom}
@@ -431,14 +433,16 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                 ? ' ' + themeFamilyId.substring(papi.themes.USER_THEME_FAMILY_PREFIX.length)
                 : '';
 
-              const optionBg = themeObj?.colors?.background || dropdownBg;
-
               return (
                 <SelectItem
                   key={`${themeFamilyId}-${type}`}
                   value={`${themeFamilyId}::${type}`}
-                  className={`p-4 rounded ${optionBg === 'red' ? 'bg-red-500 text-white' : ''}`}
-                  onMouseEnter={() => setHoverBg(optionBg)}
+                  className="tw-w-48"
+                  style={{
+                    backgroundColor: effectiveBg,
+                    color: getContrastTextColor(effectiveBg),
+                  }}
+                  onMouseEnter={() => setHoverBg(effectiveBg)}
                   onMouseLeave={() => setHoverBg(undefined)}
                 >
                   {label}
@@ -449,66 +453,70 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
           )}
         </SelectContent>
       </Select>
-      {selectedTheme &&
-        selectedTheme.cssVariables &&
-        Object.keys(selectedTheme.cssVariables || {}).length > 0 && (
-          <div className="mt-4 bg-gray-100 p-4 rounded-lg">
-            <h3
-              className="mb-3"
-              style={{
-                backgroundColor: effectiveBg,
-                color: getContrastTextColor(effectiveBg),
-              }}
-            >
-              CSS Variables for Theme:{' '}
-              <span className="text-gray-800">
-                {localizedStrings[selectedTheme.label] || selectedTheme.label || '(unknown theme)'}
-                {selectedTheme.themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)
-                  ? ' ' +
-                    selectedTheme.themeFamilyId.substring(
-                      papi.themes.USER_THEME_FAMILY_PREFIX.length,
-                    )
-                  : ''}
-              </span>
-            </h3>
-            <div className="flex flex-col gap-3">
-              {Object.entries(selectedTheme.cssVariables || {}).map(([key, value]) => {
-                const swatchColor = resolveCssVariable(value);
-                return (
-                  // 1 button (color swatch) for each css variable
-                  <div
-                    key={key}
-                    className="flex items-center gap-3 p-3 border border-dashed border-gray-300 rounded bg-white"
-                  >
-                    <Button
-                      className="w-5 h-5 mb-6 border border-gray-500 rounded flex-shrink-0 p-0"
-                      style={{ backgroundColor: swatchColor }}
-                      title={swatchColor}
-                      onClick={(e) => {
-                        handleCssVariableClick(key, value);
-                        handleSwatchClick(value, e);
-                      }}
-                    />
-                    <input
-                      type="text"
-                      value={key}
-                      readOnly
-                      style={{
-                        backgroundColor: effectiveBg,
-                        color: getContrastTextColor(effectiveBg),
-                      }}
-                      className="border border-gray-300 rounded p-1 font-mono text-gray-800 bg-gray-100 cursor-default"
-                    />
-                    <span className="font-mono text-gray-600">
-                      {value?.split(' ').length !== 3 ? value : ''}
-                    </span>
-                    <br />
-                  </div>
-                );
-              })}
+      <div>
+        {selectedTheme &&
+          selectedTheme.cssVariables &&
+          Object.keys(selectedTheme.cssVariables || {}).length > 0 && (
+            <div className="mt-4 bg-gray-100 p-4 rounded-lg">
+              <h3
+                className="mb-3"
+                style={{
+                  backgroundColor: effectiveBg,
+                  color: getContrastTextColor(effectiveBg),
+                }}
+              >
+                CSS Variables for Theme:{' '}
+                <span className="text-gray-800">
+                  {localizedStrings[selectedTheme.label] ||
+                    selectedTheme.label ||
+                    '(unknown theme)'}
+                  {selectedTheme.themeFamilyId.startsWith(papi.themes.USER_THEME_FAMILY_PREFIX)
+                    ? ' ' +
+                      selectedTheme.themeFamilyId.substring(
+                        papi.themes.USER_THEME_FAMILY_PREFIX.length,
+                      )
+                    : ''}
+                </span>
+              </h3>
+              <div className="flex flex-col gap-3">
+                {Object.entries(selectedTheme.cssVariables || {}).map(([key, value]) => {
+                  const swatchColor = resolveCssVariable(value);
+                  return (
+                    // 1 button (color swatch) for each css variable
+                    <div
+                      key={key}
+                      className="flex items-center gap-3 p-3 border border-dashed border-gray-300 rounded bg-white"
+                    >
+                      <Button
+                        className="w-5 h-5 mb-6 border border-gray-500 rounded flex-shrink-0 p-0"
+                        style={{ backgroundColor: swatchColor }}
+                        title={swatchColor}
+                        onClick={(e) => {
+                          handleCssVariableClick(key, value);
+                          handleSwatchClick(value, e);
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={key}
+                        readOnly
+                        style={{
+                          backgroundColor: effectiveBg,
+                          color: getContrastTextColor(effectiveBg),
+                        }}
+                        className="border border-gray-300 rounded p-1 font-mono text-gray-800 bg-gray-100 cursor-default"
+                      />
+                      <span className="font-mono text-gray-600">
+                        {value?.split(' ').length !== 3 ? value : ''}
+                      </span>
+                      <br />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+      </div>
       {popoverColor && popoverPosition && (
         <div
           style={{
@@ -569,6 +577,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                   />
                 </Label>
               )}
+              <p> </p>
               {/* Saturation slider */}
               {selectedTheme && saturation !== undefined && (
                 <Label
@@ -602,7 +611,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
                   />
                 </Label>
               )}
-
+              <p> </p>
               {/* Lightness slider */}
               {selectedTheme && lightness !== undefined && (
                 <Label
