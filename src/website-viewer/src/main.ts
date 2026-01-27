@@ -2,8 +2,8 @@ import papi, { logger } from '@papi/backend';
 import {
   ExecutionActivationContext,
   ExecutionToken,
-  GetWebViewOptions,
   IWebViewProvider,
+  OpenWebViewOptions,
   SavedWebViewDefinition,
   ScrollGroupScrRef,
   WebViewDefinition,
@@ -19,7 +19,7 @@ import {
   WebsiteViewerOptions,
 } from './websiteViewerOptions';
 
-interface BasicWebsiteViewerOptions extends GetWebViewOptions {
+interface BasicWebsiteViewerOptions extends OpenWebViewOptions {
   openWebsiteCommand: keyof CommandHandlers;
 }
 
