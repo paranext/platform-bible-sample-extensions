@@ -1,6 +1,6 @@
 {
-  "name": "paranextExtensionTemplate",
-  "version": "0.0.1",
+  "name": "websiteViewer",
+  "version": "0.4.0-alpha.0",
   "publisher": "paranext",
   "displayData": "assets/displayData.json",
   "author": "Paranext",
@@ -8,7 +8,7 @@
   "main": "src/main.ts",
   "extensionDependencies": {},
   "elevatedPrivileges": [],
-  "types": "src/types/paranext-extension-template.d.ts",
+  "types": "src/types/website-viewer.d.ts",
   "menus": "contributions/menus.json",
   "settings": "contributions/settings.json",
   "projectSettings": "contributions/projectSettings.json",
