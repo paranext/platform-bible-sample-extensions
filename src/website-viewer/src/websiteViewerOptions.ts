@@ -35,7 +35,7 @@ export const DEFAULT_WEBSITE_VIEWER_OPTIONS: WebsiteViewerOptions = {
  */
 function createRange(start: number, end: number) {
   if (start > end)
-    logger.warn(`website-viewer: range(${start}, ${end}) is invalid. End must be after the start.`);
+    logger.warn(`websiteViewer: range(${start}, ${end}) is invalid. End must be after the start.`);
   return [...Array(end + 1).keys()].filter((i) => i >= start);
 }
 
@@ -86,7 +86,7 @@ export function getWebsiteOptions(): Map<keyof CommandHandlers, WebsiteViewerOpt
         return `https://opentn.bible/search/?testament=${otNtUrlParam}&book=${bookName.toLowerCase()}`;
 
       logger.warn(
-        `website-viewer: OTN: ${scrRef.book} not available on the open translator notes website, routing to the main page`,
+        `websiteViewer: OTN: ${scrRef.book} not available on the open translator notes website, routing to the main page`,
       );
       return 'https://opentn.bible/';
     },

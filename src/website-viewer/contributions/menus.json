@@ -2,8 +2,8 @@
   "mainMenu": {
     "columns": {},
     "groups": {
-      "website-viewer.openGroup": {
-        "menuItem": "website-viewer.mainMenu",
+      "websiteViewer.openGroup": {
+        "menuItem": "websiteViewer.mainMenu",
         "order": 2711
       }
     },
@@ -13,35 +13,35 @@
         "localizeNotes": "Application main menu > Open Website",
         "group": "platform.projectResources",
         "order": -84,
-        "id": "website-viewer.mainMenu"
+        "id": "websiteViewer.mainMenu"
       },
       {
         "label": "%websiteViewerMenu_openUsfmDocsHelpWebsiteViewer%",
-        "group": "website-viewer.openGroup",
+        "group": "websiteViewer.openGroup",
         "order": -3,
         "command": "websiteViewer.openUsfmDocs"
       },
       {
         "label": "%websiteViewerMenu_openOTNWebsiteViewer%",
-        "group": "website-viewer.openGroup",
+        "group": "websiteViewer.openGroup",
         "order": 0,
         "command": "websiteViewer.openOTN"
       },
       {
         "label": "%websiteViewerMenu_openMarbleWebsiteViewer%",
-        "group": "website-viewer.openGroup",
+        "group": "websiteViewer.openGroup",
         "order": 1,
         "command": "websiteViewer.openMarble"
       },
       {
         "label": "%websiteViewerMenu_openWiBiLexWebsiteViewer%",
-        "group": "website-viewer.openGroup",
+        "group": "websiteViewer.openGroup",
         "order": 2,
         "command": "websiteViewer.openWiBiLex"
       },
       {
         "label": "%websiteViewerMenu_openStepBible%",
-        "group": "website-viewer.openGroup",
+        "group": "websiteViewer.openGroup",
         "order": 4,
         "command": "websiteViewer.openStepBible"
       }
@@ -57,23 +57,23 @@
     "items": []
   },
   "webViewMenus": {
-    "website-viewer.webView": {
+    "websiteViewer.webView": {
       "topMenu": {
         "columns": {
-          "website-viewer.website": {
+          "websiteViewer.website": {
             "label": "%websiteViewerMenu_website%",
             "order": 4711,
             "isExtensible": true
           }
         },
         "groups": {
-          "website-viewer.website": { "column": "website-viewer.website", "order": 3 }
+          "websiteViewer.website": { "column": "websiteViewer.website", "order": 3 }
         },
         "items": [
           {
             "label": "%websiteViewerMenu_openUrl%",
             "tooltip": "%websiteViewerMenu_openUrl_tooltip%",
-            "group": "website-viewer.website",
+            "group": "websiteViewer.website",
             "order": 1,
             "command": "websiteViewer.openUrl",
             "iconPathAfter": "papi-extension://platformScripture/assets/icons/external-link.svg"

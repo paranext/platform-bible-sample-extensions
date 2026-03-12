@@ -6,7 +6,7 @@
     "en": {
       "displayName": "Website Viewer",
       "shortSummary": "Extension to render websites inside Platform.Bible",
-      "description": "README.md"
+      "description": "assets/descriptions/description-en.md"
     }
   }
 }
