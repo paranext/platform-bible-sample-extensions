@@ -10,7 +10,7 @@ This includes
 - reloading pages on scripture reference and scroll group changes, so that web pages stay up to date with the current scripture reference
 - retaining the web page on layout changes and restart of Platform
 
-<!-- <!-- Opening comment tag for Template Info Section. Ignore this for now. More info in [Hide Template Info](#hide-template-info). -->
+<!-- Opening comment tag for Template Info Section. Ignore this for now. More info in [Hide Template Info](#hide-template-info).
 
 ## Template Info
 

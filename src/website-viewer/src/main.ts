@@ -28,7 +28,7 @@ interface ScrollGroupInfo {
   scrRef: SerializedVerseRef;
 }
 
-const WEBSITE_VIEWER_WEBVIEW_TYPE = 'website-viewer.webView';
+const WEBSITE_VIEWER_WEBVIEW_TYPE = 'websiteViewer.webView';
 const USER_DATA_KEY = 'webViewTypeById_';
 const SCR_REF_TO_TRIGGER_UPDATE: SerializedVerseRef = {
   book: '',
@@ -46,7 +46,7 @@ const scrollGroupInfoByWebViewId = new Map<string, ScrollGroupInfo>();
 async function openWebsiteViewerByType({
   openWebsiteCommand,
 }: BasicWebsiteViewerOptions): Promise<string | undefined> {
-  logger.info(`website-viewer: retrieved command to open a Website`);
+  logger.info(`websiteViewer: retrieved command to open a Website`);
   const webViewOptions = {
     openWebsiteCommand,
     // use existing id to open only 1 instance of a web view type.
@@ -108,7 +108,7 @@ const websiteViewerWebViewProvider: IWebViewProvider = {
     const options: WebsiteViewerOptions = websiteOptions.get(command) || DEFAULT_OPTIONS;
 
     const url = options.getUrl(currentScriptureReference, interfaceLanguage);
-    logger.log(`website-viewer is opening url ${url}, options: ${JSON.stringify(options)}`);
+    logger.log(`websiteViewer is opening url ${url}, options: ${JSON.stringify(options)}`);
 
     const titleFormatString = await papi.localization.getLocalizedString({
       localizeKey: '%websiteViewer_title_format%',
@@ -206,13 +206,13 @@ function getUrlForWebView(webViewId: string): string {
     ? currentScrollGroupInfo.scrRef
     : SCR_REF_TO_TRIGGER_UPDATE; // this should not happen
   if (!currentScrollGroupInfo) {
-    logger.warn('website-viewer: scroll group could not be found, copied url might be unexpected');
+    logger.warn('websiteViewer: scroll group could not be found, copied url might be unexpected');
   }
   return options.getUrl(currentScriptureReference, interfaceLanguage);
 }
 
 export async function activate(context: ExecutionActivationContext): Promise<void> {
-  logger.info('website-viewer is activating!');
+  logger.info('websiteViewer is activating!');
 
   executionToken = context.executionToken;
   // note that like this it won't update until platform is restarted
@@ -223,7 +223,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
   const scrollGroupUpdateUnsubscriber = papi.scrollGroups.onDidUpdateScrRef(
     (scrollGroupUpdateInfo) => {
       logger.debug(
-        `website-viewer: ScriptureRef changed for scrollGroup ${scrollGroupUpdateInfo.scrollGroupId}: ${commandByWebViewId.size} Website Viewer web views in memory`,
+        `websiteViewer: ScriptureRef changed for scrollGroup ${scrollGroupUpdateInfo.scrollGroupId}: ${commandByWebViewId.size} Website Viewer web views in memory`,
       );
       const updateWebViewPromises = Array.from(commandByWebViewId.entries())
         // filter web views of a type that is listening for ref changes
@@ -236,7 +236,7 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
         )
         .map(([webViewId]) => {
           logger.debug(
-            `website-viewer: Updating web view with id: ${webViewId}, command: ${commandByWebViewId.get(webViewId)}`,
+            `websiteViewer: Updating web view with id: ${webViewId}, command: ${commandByWebViewId.get(webViewId)}`,
           );
           return reopenWebsiteViewerByExistingId(webViewId);
         });
@@ -315,10 +315,10 @@ export async function activate(context: ExecutionActivationContext): Promise<voi
     ...(await Promise.all(commandPromises)),
   );
 
-  logger.info('website-viewer is finished activating!');
+  logger.info('websiteViewer is finished activating!');
 }
 
 export async function deactivate() {
-  logger.info('website-viewer is deactivating!');
+  logger.info('websiteViewer is deactivating!');
   return true;
 }
