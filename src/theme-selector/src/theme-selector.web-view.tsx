@@ -79,7 +79,7 @@ globalThis.webViewComponent = function ThemeSelector({ title }: WebViewProps) {
   const theme = useMemo(() => {
     // Warn if the theme came back as a PlatformError. Will handle the PlatformError elsewhere too
     if (isPlatformError(themePossiblyError))
-      logger.warn(`Error getting theme for toolbar button. ${getErrorMessage(theme)}`);
+      logger.warn(`Error getting theme for toolbar button. ${getErrorMessage(themePossiblyError)}`);
 
     return papi.themes.getCurrentThemeSync();
   }, [themePossiblyError]);
