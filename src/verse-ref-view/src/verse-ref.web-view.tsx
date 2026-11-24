@@ -97,9 +97,9 @@ global.webViewComponent = function VerseRefView({
   const [verse] = useProjectData('platformScripture.USFM_Verse', projectId).VerseUSFM(scrRef, '');
 
   return (
-    <div className="tw-m-4">
-      <div className="tw-flex tw-items-center">
-        <div className="tw-flex-shrink-0 tw-me-4">
+    <div className="tw:m-4">
+      <div className="tw:flex tw:items-center">
+        <div className="tw:shrink-0 tw:me-4">
           {`${scrRef.book} ${scrRef.chapterNum}:${scrRef.verse ? scrRef.verse : scrRef.verseNum}`}
         </div>
         <Select
@@ -108,7 +108,7 @@ global.webViewComponent = function VerseRefView({
           value={projectId}
           onValueChange={(pId) => setProjectId(pId)}
         >
-          <SelectTrigger className="tw-w-auto">
+          <SelectTrigger className="tw:w-auto">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
